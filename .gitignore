@@ -1,0 +1,109 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Static and media files
+/staticfiles/
+/media/
+/uploads/
+
+# Django migrations cache
+*/migrations/__pycache__/
+
+# Collected static
+collected_static/
+
+# IDEs / editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Testing / coverage
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+.cache/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# MyPy / type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Redis / dump files
+dump.rdb
+
+# Database backups
+*.sql
+*.sqlite
+*.sqlite3
+*.bak
+
+# User uploaded/import data
+data/
+*.xlsx
+*.xls
+*.csv
+
+# Logs
+logs/
+*.log
+
+# Node / frontend if inside same repo
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Angular / frontend builds
+dist/
+.angular/
+.cache/

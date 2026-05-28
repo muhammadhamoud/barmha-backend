@@ -1,0 +1,21 @@
+[
+  {"model": "vehicles.vehiclemake", "pk": 1,  "fields": {"name": "Toyota",      "popular": true}},
+  {"model": "vehicles.vehiclemake", "pk": 2,  "fields": {"name": "Honda",       "popular": true}},
+  {"model": "vehicles.vehiclemake", "pk": 3,  "fields": {"name": "Kia",         "popular": true}},
+  {"model": "vehicles.vehiclemake", "pk": 4,  "fields": {"name": "Hyundai",     "popular": true}},
+  {"model": "vehicles.vehiclemake", "pk": 5,  "fields": {"name": "BMW",         "popular": true}},
+  {"model": "vehicles.vehiclemake", "pk": 6,  "fields": {"name": "Mercedes",    "popular": true}},
+  {"model": "vehicles.vehiclemake", "pk": 7,  "fields": {"name": "Audi",        "popular": true}},
+  {"model": "vehicles.vehiclemake", "pk": 8,  "fields": {"name": "Volkswagen",  "popular": true}},
+  {"model": "vehicles.vehiclemake", "pk": 9,  "fields": {"name": "Nissan",      "popular": true}},
+  {"model": "vehicles.vehiclemake", "pk": 10, "fields": {"name": "Ford",        "popular": true}},
+  {"model": "vehicles.vehiclemake", "pk": 11, "fields": {"name": "Chevrolet",   "popular": false}},
+  {"model": "vehicles.vehiclemake", "pk": 12, "fields": {"name": "Mitsubishi",  "popular": false}},
+  {"model": "vehicles.vehiclemake", "pk": 13, "fields": {"name": "Land Rover",  "popular": false}},
+  {"model": "vehicles.vehiclemake", "pk": 14, "fields": {"name": "Lexus",       "popular": false}},
+  {"model": "vehicles.vehiclemake", "pk": 15, "fields": {"name": "Jeep",        "popular": false}},
+  {"model": "vehicles.vehiclemake", "pk": 16, "fields": {"name": "Peugeot",     "popular": false}},
+  {"model": "vehicles.vehiclemake", "pk": 17, "fields": {"name": "Renault",     "popular": false}},
+  {"model": "vehicles.vehiclemake", "pk": 18, "fields": {"name": "Suzuki",      "popular": false}},
+  {"model": "vehicles.vehiclemake", "pk": 19, "fields": {"name": "Mazda",       "popular": false}}
+]
