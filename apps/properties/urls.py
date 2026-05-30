@@ -5,6 +5,7 @@ urlpatterns = [
     path("", views.PropertyListCreateView.as_view(), name="property-list"),
     path("<int:pk>/", views.PropertyDetailView.as_view(), name="property-detail"),
     path("<int:pk>/images/", views.upload_property_image, name="property-image-upload"),
+    path("<int:pk>/view/", views.track_view, name="property-view-track"),
     path("<int:pk>/contact/", views.contact_listing, name="property-contact"),
     path("<int:pk>/request-callback/", views.request_callback, name="property-callback"),
     path("<int:pk>/similar/", views.similar_listings, name="property-similar"),

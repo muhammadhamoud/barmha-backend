@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from django.db.models import F
+from django.core.cache import cache
 
 from django.conf import settings as django_settings
 from apps.core.pagination import BarmhaPagination
@@ -39,7 +40,7 @@ class VehicleListCreateView(generics.ListCreateAPIView):
     pagination_class = BarmhaPagination
     filter_backends  = [DjangoFilterBackend, OrderingFilter]
     filterset_class  = VehicleFilter
-    ordering_fields  = ["price", "year", "mileage", "created_at", "views_count"]
+    ordering_fields  = ["price", "year", "mileage", "created_at", "updated_at", "views_count", "is_featured", "is_promoted"]
 
     def get_queryset(self):
         qs = VehicleListing.objects.select_related("make", "model", "location__governorate", "showroom").prefetch_related("images")
@@ -107,6 +108,18 @@ def upload_vehicle_image(request, pk):
 
     return Response(VehicleImageSerializer(image, context={"request": request}).data,
                     status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+def track_view(request, pk):
+    ip = request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", ""))
+    cache_key = f"view_vehicles_{pk}_{ip}"
+    if not cache.get(cache_key):
+        VehicleListing.objects.filter(pk=pk, is_active=True).update(views_count=F("views_count") + 1)
+        cache.set(cache_key, True, 86400)
+    obj = VehicleListing.objects.filter(pk=pk).values("views_count").first()
+    return Response({"views_count": obj["views_count"] if obj else 0})
 
 
 @api_view(["GET"])

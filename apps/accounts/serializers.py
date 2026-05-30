@@ -56,8 +56,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model  = User
         fields = ["id","email","first_name","last_name","phone","whatsapp",
                   "avatar","avatar_thumbnail","user_type","bio","is_verified",
-                  "is_staff","language","created_at"]
-        read_only_fields = ["id","email","is_verified","is_staff","created_at"]
+                  "email_verified","is_staff","language","created_at"]
+        read_only_fields = ["id","email","is_verified","email_verified","is_staff","created_at"]
         # email is read-only: users cannot change it via the profile API.
         # is_staff is read-only: only set via Django admin.
         # username intentionally omitted from the public profile API
@@ -207,6 +207,7 @@ class FavouriteSerializer(serializers.ModelSerializer):
                     "title":             item.title,
                     "translations":      None,
                     "price":             float(item.price) if item.price is not None else None,
+                    "hide_price":        item.hide_price,
                     "currency":          item.currency,
                     "primary_image_url": primary_card(item.images),
                     "location_name":     item.location.safe_translation_getter("name", any_language=True) if item.location else None,
@@ -223,6 +224,7 @@ class FavouriteSerializer(serializers.ModelSerializer):
                     "title":             item.title,
                     "translations":      None,
                     "price":             float(item.price) if item.price is not None else None,
+                    "hide_price":        item.hide_price,
                     "currency":          item.currency,
                     "primary_image_url": primary_card(item.images),
                     "location_name":     item.location.safe_translation_getter("name", any_language=True) if item.location else None,
@@ -239,6 +241,7 @@ class FavouriteSerializer(serializers.ModelSerializer):
                     "title":             None,
                     "translations":      translations_dict(item),
                     "price":             float(item.price) if item.price is not None else None,
+                    "hide_price":        item.hide_price,
                     "currency":          item.currency,
                     "primary_image_url": primary_card(item.images),
                     "location_name":     item.location.safe_translation_getter("name", any_language=True) if item.location else None,
@@ -255,6 +258,7 @@ class FavouriteSerializer(serializers.ModelSerializer):
                     "title":             None,
                     "translations":      translations_dict(item),
                     "price":             float(item.price) if item.price is not None else None,
+                    "hide_price":        False,
                     "currency":          item.currency,
                     "primary_image_url": None,
                     "location_name":     item.location.safe_translation_getter("name", any_language=True) if item.location else None,
@@ -266,14 +270,16 @@ class FavouriteSerializer(serializers.ModelSerializer):
             # ── Jobs ──────────────────────────────────────────────────────────
             if ct == "job":
                 from apps.jobs.models import JobListing
-                item = JobListing.objects.select_related("location").get(pk=oid)
+                item = JobListing.objects.select_related("location__governorate").get(pk=oid)
                 return {
                     "title":             None,
                     "translations":      translations_dict(item),
                     "price":             None,
+                    "hide_price":        False,
                     "currency":          "SYP",
                     "primary_image_url": None,
                     "location_name":     item.location.safe_translation_getter("name", any_language=True) if item.location else None,
+                    "governorate_name":  item.location.governorate.safe_translation_getter("name", any_language=True) if item.location and item.location.governorate else None,
                     "is_featured":       item.is_featured,
                     "is_promoted":       getattr(item, "is_promoted", False),
                     "created_at":        item.created_at.isoformat(),
@@ -282,14 +288,18 @@ class FavouriteSerializer(serializers.ModelSerializer):
             # ── Deals ─────────────────────────────────────────────────────────
             if ct == "deal":
                 from apps.deals.models import Deal
-                item = Deal.objects.get(pk=oid)
+                item = Deal.objects.select_related("merchant__location__governorate").get(pk=oid)
+                merchant = item.merchant
+                loc = merchant.location if merchant else None
                 return {
                     "title":             None,
                     "translations":      translations_dict(item),
                     "price":             float(item.deal_price) if item.deal_price is not None else None,
+                    "hide_price":        False,
                     "currency":          item.currency,
                     "primary_image_url": abs_url(item.card) if hasattr(item, "card") else None,
-                    "location_name":     None,
+                    "location_name":     loc.safe_translation_getter("name", any_language=True) if loc else None,
+                    "governorate_name":  loc.governorate.safe_translation_getter("name", any_language=True) if loc and loc.governorate else None,
                     "is_featured":       item.is_featured,
                     "is_promoted":       getattr(item, "is_promoted", False),
                     "created_at":        item.created_at.isoformat(),
@@ -298,14 +308,16 @@ class FavouriteSerializer(serializers.ModelSerializer):
             # ── Events ────────────────────────────────────────────────────────
             if ct == "event":
                 from apps.events.models import Event
-                item = Event.objects.select_related("location").get(pk=oid)
+                item = Event.objects.select_related("location__governorate").get(pk=oid)
                 return {
                     "title":             None,
                     "translations":      translations_dict(item),
                     "price":             float(item.price) if getattr(item, "price", None) is not None else None,
+                    "hide_price":        False,
                     "currency":          getattr(item, "currency", "SYP"),
                     "primary_image_url": abs_url(item.card) if hasattr(item, "card") else None,
                     "location_name":     item.location.safe_translation_getter("name", any_language=True) if getattr(item, "location", None) else None,
+                    "governorate_name":  item.location.governorate.safe_translation_getter("name", any_language=True) if getattr(item, "location", None) and item.location.governorate else None,
                     "is_featured":       item.is_featured,
                     "is_promoted":       getattr(item, "is_promoted", False),
                     "created_at":        item.created_at.isoformat(),

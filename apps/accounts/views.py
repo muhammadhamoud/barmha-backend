@@ -10,6 +10,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from apps.core.throttles import LoginThrottle, RegisterThrottle
+from apps.core.email_utils import send_welcome_email, send_activation_email, verify_activation_token
+from django.core.signing import BadSignature, SignatureExpired
 from .models import (
     User, RealEstateAgent, RealEstateAgency,
     Subscription, SavedSearch, Favourite, PhoneVerification, PaymentIntent,
@@ -58,6 +60,10 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user    = serializer.save()
         refresh = RefreshToken.for_user(user)
+        lang = request.headers.get("Accept-Language", "ar")[:2]
+        if user.email:
+            send_welcome_email(user, language=lang)
+            send_activation_email(user, language=lang)
         return Response({
             "user":    UserProfileSerializer(user).data,
             "access":  str(refresh.access_token),
@@ -388,15 +394,23 @@ def _find_or_create_user(email, first_name="", last_name="", avatar_url="", veri
     user, created = User.objects.get_or_create(
         email=email,
         defaults={
-            "first_name":  first_name[:50],
-            "last_name":   last_name[:50],
-            "user_type":   "individual",
-            "is_verified": verified,
+            "first_name":    first_name[:50],
+            "last_name":     last_name[:50],
+            "user_type":     "individual",
+            "is_verified":   verified,
+            "email_verified": verified,
         },
     )
+    update_fields = []
     if avatar_url and not user.social_avatar_url:
         user.social_avatar_url = avatar_url
-        user.save(update_fields=["social_avatar_url"])
+        update_fields.append("social_avatar_url")
+    # Ensure returning social-auth users also get email_verified set
+    if verified and not user.email_verified:
+        user.email_verified = True
+        update_fields.append("email_verified")
+    if update_fields:
+        user.save(update_fields=update_fields)
     return user
 
 
@@ -575,3 +589,77 @@ class UserSearchView(generics.ListAPIView):
             .exclude(pk=self.request.user.pk)
             .order_by("first_name", "last_name")[:20]
         )
+
+
+class ActivateEmailView(APIView):
+    """GET /accounts/activate/?token=<signed-token> — verifies token, sets email_verified=True."""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        token = request.query_params.get("token", "")
+        if not token:
+            return Response({"detail": "Missing token."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            pk = verify_activation_token(token)
+            user = User.objects.get(pk=pk)
+        except SignatureExpired:
+            return Response({"detail": "Link expired."}, status=status.HTTP_400_BAD_REQUEST)
+        except (BadSignature, User.DoesNotExist, Exception):
+            return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.email_verified:
+            user.email_verified = True
+            user.save(update_fields=["email_verified"])
+        return Response({"detail": "Email verified successfully."})
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def request_password_reset(request):
+    """POST /accounts/password/reset/ — sends branded reset email."""
+    from apps.core.email_utils import send_password_reset_email, make_activation_token
+    email = request.data.get("email", "").strip().lower()
+    if not email:
+        return Response({"detail": "Email required."}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        user = User.objects.get(email__iexact=email)
+    except User.DoesNotExist:
+        # Don't reveal whether the email exists
+        return Response({"detail": "If that email is registered you will receive a reset link shortly."})
+    lang  = request.headers.get("Accept-Language", "ar")[:2]
+    token = make_activation_token(user)
+    send_password_reset_email(user, token=token, language=lang)
+    return Response({"detail": "If that email is registered you will receive a reset link shortly."})
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def confirm_password_reset(request):
+    """POST /accounts/password/reset/confirm/ — verifies token, sets new password."""
+    token    = request.data.get("token", "")
+    password = request.data.get("password", "")
+    if not token or not password:
+        return Response({"detail": "token and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        pk   = verify_activation_token(token, max_age_seconds=3600)
+        user = User.objects.get(pk=pk)
+    except SignatureExpired:
+        return Response({"detail": "Reset link has expired."}, status=status.HTTP_400_BAD_REQUEST)
+    except (BadSignature, User.DoesNotExist, Exception):
+        return Response({"detail": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+    user.set_password(password)
+    user.save(update_fields=["password"])
+    return Response({"detail": "Password reset successfully."})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def resend_activation_email(request):
+    """POST /accounts/activate/resend/ — resends the activation email to the current user."""
+    from apps.core.email_utils import send_activation_email
+    user = request.user
+    if user.email_verified:
+        return Response({"detail": "Email already verified."})
+    if user.email:
+        lang = request.headers.get("Accept-Language", "ar")[:2]
+        send_activation_email(user, language=lang)
+    return Response({"detail": "Activation email sent."})

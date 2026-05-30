@@ -80,21 +80,24 @@ class CompanyProfileSerializer(TranslatableModelSerializer):
 
 
 class JobListSerializer(TranslatableModelSerializer):
-    translations    = TranslatedFieldsField(shared_model=JobListing)
-    company_name    = serializers.SerializerMethodField()
-    company_logo    = serializers.SerializerMethodField()
-    area_name       = serializers.SerializerMethodField()
-    ai_summary      = serializers.SerializerMethodField()
-    seller_phone    = serializers.SerializerMethodField()
-    seller_whatsapp = serializers.SerializerMethodField()
+    translations     = TranslatedFieldsField(shared_model=JobListing)
+    company_name     = serializers.SerializerMethodField()
+    company_logo     = serializers.SerializerMethodField()
+    area_name        = serializers.SerializerMethodField()
+    governorate_name = serializers.SerializerMethodField()
+    governorate_id   = serializers.SerializerMethodField()
+    ai_summary       = serializers.SerializerMethodField()
+    seller_phone     = serializers.SerializerMethodField()
+    seller_whatsapp  = serializers.SerializerMethodField()
 
     class Meta:
         model  = JobListing
         fields = [
             "id", "translations", "job_type", "experience", "gender",
             "min_salary", "max_salary", "currency", "salary_period", "hide_salary",
-            "is_remote", "is_featured", "quick_apply",
+            "is_remote", "is_featured", "quick_apply", "location",
             "company_name", "company_logo", "area_name",
+            "governorate_name", "governorate_id",
             "ai_summary", "seller_phone", "seller_whatsapp",
             "views_count", "applications_count", "expires_at", "created_at",
         ]
@@ -113,6 +116,16 @@ class JobListSerializer(TranslatableModelSerializer):
     def get_area_name(self, obj):
         if obj.location:
             return obj.location.safe_translation_getter("name", any_language=True)
+        return None
+
+    def get_governorate_id(self, obj):
+        if obj.location and obj.location.governorate:
+            return obj.location.governorate.pk
+        return None
+
+    def get_governorate_name(self, obj):
+        if obj.location and obj.location.governorate:
+            return obj.location.governorate.safe_translation_getter("name", any_language=True)
         return None
 
     def get_ai_summary(self, obj):

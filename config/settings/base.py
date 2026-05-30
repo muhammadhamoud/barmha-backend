@@ -81,10 +81,18 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "config.urls"
 
+# Angular build output — defined early so TEMPLATES and WHITENOISE_ROOT can use it.
+FRONTEND_DIST_DIR = BASE_DIR / "frontend" / "dist"
+
+_template_dirs = [BASE_DIR / "templates"]
+# Include Angular dist so the SPA catch-all view can locate index.html.
+if FRONTEND_DIST_DIR.exists():
+    _template_dirs.append(FRONTEND_DIST_DIR)
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": _template_dirs,
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -96,6 +104,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = "config.wsgi.application"
 # TODO: Uncomment for production ASGI server (Daphne/Uvicorn) — required for WebSocket chat.
@@ -126,7 +135,12 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# WhiteNoise serves every file in FRONTEND_DIST_DIR at its natural URL path
+# (e.g. /main-abc123.js, /ngsw.json) without the /static/ prefix, keeping
+# Angular assets separate from Django's own /static/ files.
+if FRONTEND_DIST_DIR.exists():
+    WHITENOISE_ROOT = FRONTEND_DIST_DIR
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -371,31 +385,92 @@ AWS_DEFAULT_ACL         = None
 AWS_QUERYSTRING_AUTH    = False
 AWS_S3_FILE_OVERWRITE   = False
 
+# # Use S3 for uploaded media when credentials are configured; fall back to
+# # local filesystem when they are not (e.g. shared hosting without S3).
+# if AWS_ACCESS_KEY_ID and AWS_STORAGE_BUCKET_NAME:
+#     STORAGES = {
+#         "default": {
+#             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+#             "OPTIONS": {
+#                 "bucket_name": AWS_STORAGE_BUCKET_NAME,
+#                 "region_name": AWS_S3_REGION_NAME,
+#                 "location": "media",
+#                 "default_acl": None,
+#                 "querystring_auth": False,
+#                 "file_overwrite": False,
+#                 "object_parameters": AWS_S3_OBJECT_PARAMETERS,
+#             },
+#         },
+#         "staticfiles": {
+#             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+#         },
+#     }
+#     _cdn = AWS_S3_CUSTOM_DOMAIN or f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+#     MEDIA_URL = f"https://{_cdn}/media/"
+#     IMAGEKIT_DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+# else:
+#     # Shared hosting fallback — store uploads on the local filesystem.
+#     MEDIA_URL  = "/media/"
+#     MEDIA_ROOT = BASE_DIR / "media"
+
 # Use S3 for uploaded media when credentials are configured; fall back to
-# local filesystem when they are not (e.g. shared hosting without S3).
+# local filesystem when they are not.
+
 if AWS_ACCESS_KEY_ID and AWS_STORAGE_BUCKET_NAME:
-    STORAGES = {
-        "default": {
-            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-            "OPTIONS": {
-                "bucket_name": AWS_STORAGE_BUCKET_NAME,
-                "region_name": AWS_S3_REGION_NAME,
-                "location": "media",
-                "default_acl": None,
-                "querystring_auth": False,
-                "file_overwrite": False,
-                "object_parameters": AWS_S3_OBJECT_PARAMETERS,
-            },
-        },
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    default_storage = {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "bucket_name": AWS_STORAGE_BUCKET_NAME,
+            "region_name": AWS_S3_REGION_NAME,
+            "location": "media",
+            "default_acl": None,
+            "querystring_auth": False,
+            "file_overwrite": False,
+            "object_parameters": AWS_S3_OBJECT_PARAMETERS,
         },
     }
+
     _cdn = AWS_S3_CUSTOM_DOMAIN or f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
     MEDIA_URL = f"https://{_cdn}/media/"
     IMAGEKIT_DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
 else:
-    # Shared hosting fallback — store uploads on the local filesystem.
-    MEDIA_URL  = "/media/"
+    default_storage = {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    }
+
+    MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
+    IMAGEKIT_DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
+
+# Static files
+if DEBUG:
+    staticfiles_storage = {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    }
+else:
+    staticfiles_storage = {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    }
+
+
+STORAGES = {
+    "default": default_storage,
+    "staticfiles": staticfiles_storage,
+}
+
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_DOMAIN = 'barmha.com'
+EMAIL_HOST=f'mail.{EMAIL_DOMAIN}'
+EMAIL_PORT=465
+EMAIL_USE_SSL=True
+EMAIL_HOST_USER=f'noreply@{EMAIL_DOMAIN}'
+DEFAULT_FROM_EMAIL=f'noreply@{EMAIL_DOMAIN}'
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="") 
 

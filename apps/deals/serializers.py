@@ -12,15 +12,28 @@ class DealCategorySerializer(TranslatableModelSerializer):
 
 
 class MerchantSerializer(TranslatableModelSerializer):
-    translations = TranslatedFieldsField(shared_model=Merchant)
+    translations     = TranslatedFieldsField(shared_model=Merchant)
+    area_name        = serializers.SerializerMethodField()
+    governorate_name = serializers.SerializerMethodField()
 
     class Meta:
         model  = Merchant
         fields = [
             "id", "translations", "logo", "category", "location",
+            "area_name", "governorate_name",
             "phone", "whatsapp", "website", "instagram",
             "is_verified", "is_featured", "avg_rating", "created_at",
         ]
+
+    def get_area_name(self, obj):
+        if obj.location:
+            return obj.location.safe_translation_getter("name", any_language=True)
+        return None
+
+    def get_governorate_name(self, obj):
+        if obj.location and obj.location.governorate:
+            return obj.location.governorate.safe_translation_getter("name", any_language=True)
+        return None
 
 
 class DealSerializer(TranslatableModelSerializer):

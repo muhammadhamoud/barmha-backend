@@ -25,6 +25,7 @@ class VehicleCreateSerializer(serializers.ModelSerializer):
         model  = VehicleListing
         fields = [
             "id",
+            "listing_intent",
             "title", "description",
             "listing_type", "category",
             "make", "model", "model_name", "trim", "year",
@@ -38,6 +39,7 @@ class VehicleCreateSerializer(serializers.ModelSerializer):
             "is_active",
         ]
         extra_kwargs = {
+            "listing_intent": {"required": False},
             # Allow nulls / blanks for optional fields
             "description":    {"required": False, "allow_blank": True},
             "make":           {"required": False, "allow_null": True},
@@ -148,22 +150,30 @@ class VehicleListSerializer(serializers.ModelSerializer):
     make_name        = serializers.SerializerMethodField()
     model_name       = serializers.SerializerMethodField()
     primary_image    = serializers.SerializerMethodField()
+    images           = serializers.SerializerMethodField()
     area_name        = serializers.SerializerMethodField()
     governorate_name = serializers.SerializerMethodField()
+    governorate_id   = serializers.SerializerMethodField()
     ai_summary       = serializers.SerializerMethodField()
     seller_phone     = serializers.SerializerMethodField()
     seller_whatsapp  = serializers.SerializerMethodField()
+    seller_name      = serializers.SerializerMethodField()
+    seller_logo      = serializers.SerializerMethodField()
 
     class Meta:
         model  = VehicleListing
         fields = [
-            "id", "title", "listing_type", "category",
+            "id", "listing_intent", "title", "listing_type", "category",
             "make_name", "model_name", "trim", "year",
             "price", "currency", "negotiable", "hide_price",
             "mileage", "fuel_type", "gear_type", "condition",
+            "engine_size", "cylinders", "wheel_drive", "views_count",
             "is_featured", "is_promoted", "is_sold",
-            "primary_image", "area_name", "governorate_name", "ai_summary",
-            "seller_phone", "seller_whatsapp", "created_at",
+            "location",
+            "primary_image", "images", "area_name",
+            "governorate_name", "governorate_id", "ai_summary",
+            "seller_phone", "seller_whatsapp",
+            "seller_name", "seller_logo", "created_at",
         ]
 
     def get_make_name(self, obj):
@@ -178,9 +188,19 @@ class VehicleListSerializer(serializers.ModelSerializer):
             return VehicleImageSerializer(img, context=self.context).data
         return None
 
+    def get_images(self, obj):
+        return VehicleImageSerializer(
+            obj.images.order_by("order", "id"), many=True, context=self.context
+        ).data
+
     def get_area_name(self, obj):
         if obj.location:
             return obj.location.safe_translation_getter("name", any_language=True)
+        return None
+
+    def get_governorate_id(self, obj):
+        if obj.location and obj.location.governorate:
+            return obj.location.governorate.pk
         return None
 
     def get_governorate_name(self, obj):
@@ -210,6 +230,27 @@ class VehicleListSerializer(serializers.ModelSerializer):
             return obj.showroom.whatsapp
         return obj.posted_by.whatsapp or self.get_seller_phone(obj)
 
+    def get_seller_name(self, obj):
+        if obj.showroom:
+            return obj.showroom.name or None
+        u = obj.posted_by
+        return f"{u.first_name} {u.last_name}".strip() or u.username
+
+    def get_seller_logo(self, obj):
+        req = self.context.get("request")
+        if obj.showroom and obj.showroom.logo:
+            try:
+                return req.build_absolute_uri(obj.showroom.logo.url) if req else obj.showroom.logo.url
+            except Exception:
+                pass
+        try:
+            if obj.posted_by and obj.posted_by.avatar_thumbnail:
+                t = obj.posted_by.avatar_thumbnail
+                return req.build_absolute_uri(t.url) if req else t.url
+        except Exception:
+            pass
+        return None
+
 
 class VehicleDetailSerializer(VehicleListSerializer):
     images   = VehicleImageSerializer(many=True, read_only=True)
@@ -217,11 +258,12 @@ class VehicleDetailSerializer(VehicleListSerializer):
 
     class Meta(VehicleListSerializer.Meta):
         fields = VehicleListSerializer.Meta.fields + [
-            "description", "engine_size", "cylinders", "wheel_drive",
+            "make", "model",   # raw FK integers for edit-mode pre-selection
+            "description",
             "body_style", "color_exterior", "color_interior", "doors", "seats",
             "import_source", "insurance_type", "features",
             "under_warranty", "computer_check",
-            "views_count", "expires_at", "updated_at",
+            "expires_at", "updated_at",
             "meta_title", "meta_description",
             "images", "showroom",
         ]

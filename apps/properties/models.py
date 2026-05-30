@@ -7,6 +7,7 @@ from apps.core.validators import validate_image_size, validate_image_type
 
 class PropertyListing(SeoMixin):
     PURPOSE_CHOICES = [("for_rent","For Rent"),("for_sale","For Sale")]
+    INTENT_CHOICES  = [("offer","Offering"),("wanted","Wanted / Looking to buy")]
     CATEGORY_CHOICES = [("residential","Residential"),("commercial","Commercial"),("international","International")]
     FURNISHING_CHOICES = [
         ("fully_furnished","Fully Furnished"),("semi_furnished","Semi-Furnished"),
@@ -18,6 +19,7 @@ class PropertyListing(SeoMixin):
     ]
     DEPOSIT_CHOICES = [("1_month","1 Month"),("half_month","1/2 Month"),("2_months","2 Months"),("none","None")]
 
+    listing_intent = models.CharField(max_length=10, choices=INTENT_CHOICES, default="offer")
     title          = models.CharField(max_length=300)
     description    = models.TextField()
     purpose        = models.CharField(max_length=10, choices=PURPOSE_CHOICES)

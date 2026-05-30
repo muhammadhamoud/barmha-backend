@@ -16,7 +16,25 @@ class EventListCreateView(generics.ListCreateAPIView):
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
-        return Event.objects.filter(is_active=True).select_related("category", "location").prefetch_related("images")
+        qs = Event.objects.filter(is_active=True).select_related(
+            "category", "location__governorate"
+        ).prefetch_related("images")
+        p = self.request.query_params
+        gov = p.get("governorate")
+        if gov:
+            qs = qs.filter(location__governorate=gov)
+        cat = p.get("category")
+        if cat:
+            qs = qs.filter(category=cat)
+        if p.get("is_online"):
+            qs = qs.filter(is_online=True)
+        start_after  = p.get("start_after")
+        start_before = p.get("start_before")
+        if start_after:
+            qs = qs.filter(start_date__gte=start_after)
+        if start_before:
+            qs = qs.filter(start_date__lte=start_before)
+        return qs
 
     def perform_create(self, serializer):
         serializer.save(organizer=self.request.user)

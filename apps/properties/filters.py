@@ -28,4 +28,5 @@ class PropertyFilter(django_filters.FilterSet):
             "internet_included":   ["exact"],
             "is_featured":         ["exact"],
             "is_active":           ["exact"],
+            "listing_intent":      ["exact"],
         }

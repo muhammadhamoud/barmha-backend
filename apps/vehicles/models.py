@@ -39,7 +39,9 @@ class VehicleListing(SeoMixin):
     LISTING_TYPE_CHOICES = [("sale", "For Sale"), ("rent", "For Rent")]
     CATEGORY_CHOICES     = [("car", "Car"), ("commercial", "Commercial"), ("motorbike", "Motorbike"), ("boat", "Boat")]
     CONDITION_CHOICES    = [("brand_new", "Brand New"), ("used", "Used")]
+    INTENT_CHOICES       = [("offer", "Offering"), ("wanted", "Wanted / Looking to buy")]
 
+    listing_intent  = models.CharField(max_length=10, choices=INTENT_CHOICES, default="offer")
     listing_type    = models.CharField(max_length=10, choices=LISTING_TYPE_CHOICES)
     category        = models.CharField(max_length=15, choices=CATEGORY_CHOICES)
     make            = models.ForeignKey(VehicleMake, on_delete=models.SET_NULL, null=True, blank=True)

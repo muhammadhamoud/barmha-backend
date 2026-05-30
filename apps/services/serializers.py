@@ -68,18 +68,20 @@ class ServiceProviderSerializer(TranslatableModelSerializer):
 
 
 class ServiceListingSerializer(TranslatableModelSerializer):
-    translations    = TranslatedFieldsField(shared_model=ServiceListing)
-    provider_name   = serializers.SerializerMethodField()
-    area_name       = serializers.SerializerMethodField()
-    seller_phone    = serializers.SerializerMethodField()
-    seller_whatsapp = serializers.SerializerMethodField()
+    translations     = TranslatedFieldsField(shared_model=ServiceListing)
+    provider_name    = serializers.SerializerMethodField()
+    area_name        = serializers.SerializerMethodField()
+    governorate_name = serializers.SerializerMethodField()
+    governorate_id   = serializers.SerializerMethodField()
+    seller_phone     = serializers.SerializerMethodField()
+    seller_whatsapp  = serializers.SerializerMethodField()
 
     class Meta:
         model  = ServiceListing
         fields = [
             "id", "translations", "provider", "provider_name", "category",
             "price", "min_price", "max_price", "currency", "price_type",
-            "location", "area_name",
+            "location", "area_name", "governorate_name", "governorate_id",
             "seller_phone", "seller_whatsapp",
             "is_active", "is_featured", "is_promoted", "views_count", "created_at",
         ]
@@ -90,6 +92,16 @@ class ServiceListingSerializer(TranslatableModelSerializer):
     def get_area_name(self, obj):
         if obj.location:
             return obj.location.safe_translation_getter("name", any_language=True)
+        return None
+
+    def get_governorate_id(self, obj):
+        if obj.location and obj.location.governorate:
+            return obj.location.governorate.pk
+        return None
+
+    def get_governorate_name(self, obj):
+        if obj.location and obj.location.governorate:
+            return obj.location.governorate.safe_translation_getter("name", any_language=True)
         return None
 
     def get_seller_phone(self, obj):

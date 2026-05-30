@@ -31,4 +31,5 @@ class VehicleFilter(django_filters.FilterSet):
             "is_featured":    ["exact"],
             "is_active":      ["exact"],
             "currency":       ["exact"],
+            "listing_intent": ["exact"],
         }

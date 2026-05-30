@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from django.db.models import F
 from django.shortcuts import get_object_or_404
+from django.core.cache import cache
 
 from apps.core.pagination import BarmhaPagination
 from .filters import JobFilter
@@ -36,7 +37,7 @@ class JobListCreateView(generics.ListCreateAPIView):
     pagination_class = BarmhaPagination
     filter_backends  = [DjangoFilterBackend, OrderingFilter]
     filterset_class  = JobFilter
-    ordering_fields  = ["created_at", "views_count"]
+    ordering_fields  = ["created_at", "updated_at", "views_count", "is_featured", "is_promoted"]
 
     def get_queryset(self):
         qs = JobListing.objects.select_related("company", "posted_by", "category", "location__governorate")
@@ -85,6 +86,18 @@ def apply_to_job(request, pk):
     application = serializer.save(job=job, applicant=request.user)
     JobListing.objects.filter(pk=job.pk).update(applications_count=F("applications_count") + 1)
     return Response(JobApplicationSerializer(application).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+def track_view(request, pk):
+    ip = request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", ""))
+    cache_key = f"view_jobs_{pk}_{ip}"
+    if not cache.get(cache_key):
+        JobListing.objects.filter(pk=pk, is_active=True).update(views_count=F("views_count") + 1)
+        cache.set(cache_key, True, 86400)
+    obj = JobListing.objects.filter(pk=pk).values("views_count").first()
+    return Response({"views_count": obj["views_count"] if obj else 0})
 
 
 @api_view(["GET"])

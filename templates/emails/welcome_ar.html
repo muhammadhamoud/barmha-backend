@@ -1,0 +1,20 @@
+{% extends "emails/base.html" %}
+{% block subject %}أهلاً بك في برمها!{% endblock %}
+{% block body %}
+  <h1>أهلاً بك، {{ first_name|default:username }}! 🎉</h1>
+  <p>يسعدنا انضمامك إلى <strong>برمها</strong>، المنصة الإعلانية الشاملة للعقارات والسيارات والوظائف والخدمات والمزيد.</p>
+  <p>إليك ما يمكنك فعله الآن:</p>
+  <ul>
+    <li>انشر إعلانك الأول مجاناً في دقائق</li>
+    <li>تصفّح آلاف الإعلانات في منطقتك</li>
+    <li>تواصل مع البائعين مباشرةً عبر التطبيق</li>
+    <li>احفظ إعلاناتك المفضّلة وتلقّ تنبيهات السعر</li>
+  </ul>
+  <div class="cta-wrap">
+    <a class="cta-btn" href="{{ frontend_url|default:'https://barmha.com' }}">ابدأ الاستكشاف</a>
+  </div>
+  <hr class="divider" />
+  <p style="font-size:13px; color:#888;">إذا كنت بحاجة إلى مساعدة، تواصل معنا على <a href="mailto:support@barmha.com" style="color:#d97c00;">support@barmha.com</a></p>
+{% endblock %}
+{% block footer_note %}© 2025 barmha.com — جميع الحقوق محفوظة{% endblock %}
+{% block unsubscribe %}إذا لم تُنشئ حساباً على برمها، يمكنك تجاهل هذا البريد بأمان.{% endblock %}

@@ -43,6 +43,7 @@ class PropertyCreateSerializer(serializers.ModelSerializer):
         model  = PropertyListing
         fields = [
             "id",
+            "listing_intent",
             "title", "description", "purpose", "category", "property_type",
             "price", "price_per_sqm", "currency", "price_period",
             "negotiable", "hide_price",
@@ -55,6 +56,7 @@ class PropertyCreateSerializer(serializers.ModelSerializer):
             "is_active",
         ]
         extra_kwargs = {
+            "listing_intent": {"required": False},
             "description":    {"required": False, "allow_blank": True},
             "price":          {"required": False, "allow_null": True},
             "price_per_sqm":  {"required": False, "allow_null": True},
@@ -166,22 +168,30 @@ class NearbyAmenitySerializer(serializers.ModelSerializer):
 
 class PropertyListSerializer(serializers.ModelSerializer):
     primary_image    = serializers.SerializerMethodField()
+    images           = serializers.SerializerMethodField()
     area_name        = serializers.SerializerMethodField()
     city_name        = serializers.SerializerMethodField()
     governorate_name = serializers.SerializerMethodField()
+    governorate_id   = serializers.SerializerMethodField()
     ai_summary       = serializers.SerializerMethodField()
     seller_phone     = serializers.SerializerMethodField()
     seller_whatsapp  = serializers.SerializerMethodField()
+    seller_name      = serializers.SerializerMethodField()
+    seller_logo      = serializers.SerializerMethodField()
 
     class Meta:
         model  = PropertyListing
         fields = [
-            "id", "title", "purpose", "category", "property_type",
+            "id", "listing_intent", "title", "purpose", "category", "property_type",
             "price", "currency", "price_period", "negotiable", "hide_price",
             "bedrooms", "bathrooms", "area_sqm", "furnishing",
+            "floor_number", "total_floors", "views_count",
             "is_featured", "is_promoted", "is_sold_rented",
-            "primary_image", "area_name", "city_name", "governorate_name",
-            "ai_summary", "seller_phone", "seller_whatsapp", "created_at",
+            "location", "latitude", "longitude",
+            "primary_image", "images", "area_name", "city_name",
+            "governorate_name", "governorate_id",
+            "ai_summary", "seller_phone", "seller_whatsapp",
+            "seller_name", "seller_logo", "created_at",
         ]
 
     def get_primary_image(self, obj):
@@ -189,6 +199,11 @@ class PropertyListSerializer(serializers.ModelSerializer):
         if img:
             return PropertyImageSerializer(img, context=self.context).data
         return None
+
+    def get_images(self, obj):
+        return PropertyImageSerializer(
+            obj.images.order_by("order", "id"), many=True, context=self.context
+        ).data
 
     def get_area_name(self, obj):
         if obj.location:
@@ -199,6 +214,11 @@ class PropertyListSerializer(serializers.ModelSerializer):
         """Kept for backward-compat — returns governorate name (use governorate_name instead)."""
         if obj.location and obj.location.governorate:
             return obj.location.governorate.safe_translation_getter("name", any_language=True)
+        return None
+
+    def get_governorate_id(self, obj):
+        if obj.location and obj.location.governorate:
+            return obj.location.governorate.pk
         return None
 
     def get_governorate_name(self, obj):
@@ -231,6 +251,37 @@ class PropertyListSerializer(serializers.ModelSerializer):
         if obj.agency and obj.agency.whatsapp:
             return obj.agency.whatsapp
         return obj.posted_by.whatsapp or self.get_seller_phone(obj)
+
+    def get_seller_name(self, obj):
+        if obj.agent and obj.agent.user:
+            u = obj.agent.user
+            return f"{u.first_name} {u.last_name}".strip() or u.username
+        if obj.agency:
+            return obj.agency.name or None
+        u = obj.posted_by
+        return f"{u.first_name} {u.last_name}".strip() or u.username
+
+    def get_seller_logo(self, obj):
+        req = self.context.get("request")
+        try:
+            if obj.agent and obj.agent.user.avatar_thumbnail:
+                t = obj.agent.user.avatar_thumbnail
+                return req.build_absolute_uri(t.url) if req else t.url
+        except Exception:
+            pass
+        try:
+            if obj.agency and obj.agency.logo_thumbnail:
+                t = obj.agency.logo_thumbnail
+                return req.build_absolute_uri(t.url) if req else t.url
+        except Exception:
+            pass
+        try:
+            if obj.posted_by and obj.posted_by.avatar_thumbnail:
+                t = obj.posted_by.avatar_thumbnail
+                return req.build_absolute_uri(t.url) if req else t.url
+        except Exception:
+            pass
+        return None
 
 
 class PropertyDetailSerializer(PropertyListSerializer):

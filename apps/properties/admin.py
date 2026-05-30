@@ -16,9 +16,9 @@ class NearbyAmenityInline(admin.TabularInline):
 
 @admin.register(PropertyListing)
 class PropertyListingAdmin(admin.ModelAdmin):
-    list_display    = ["title", "purpose", "category", "property_type", "price", "currency",
+    list_display    = ["title", "listing_intent", "purpose", "category", "property_type", "price", "currency",
                        "location", "is_active", "is_featured", "is_promoted", "created_at"]
-    list_filter     = ["purpose", "category", "is_active", "is_featured", "is_promoted", "currency"]
+    list_filter     = ["listing_intent", "purpose", "category", "is_active", "is_featured", "is_promoted", "currency"]
     search_fields   = ["title", "description", "reference_code"]
     raw_id_fields   = ["posted_by", "agency", "agent", "location"]
     inlines         = [PropertyImageInline, NearbyAmenityInline]

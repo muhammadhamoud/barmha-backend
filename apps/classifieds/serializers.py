@@ -76,12 +76,15 @@ class StoreSerializer(TranslatableModelSerializer):
 
 
 class ClassifiedListSerializer(TranslatableModelSerializer):
-    translations    = TranslatedFieldsField(shared_model=ClassifiedListing)
-    primary_image   = serializers.SerializerMethodField()
-    location_name   = serializers.SerializerMethodField()
-    seller_name     = serializers.SerializerMethodField()
-    seller_phone    = serializers.SerializerMethodField()
-    seller_whatsapp = serializers.SerializerMethodField()
+    translations     = TranslatedFieldsField(shared_model=ClassifiedListing)
+    primary_image    = serializers.SerializerMethodField()
+    images           = serializers.SerializerMethodField()
+    location_name    = serializers.SerializerMethodField()
+    governorate_name = serializers.SerializerMethodField()
+    governorate_id   = serializers.SerializerMethodField()
+    seller_name      = serializers.SerializerMethodField()
+    seller_phone     = serializers.SerializerMethodField()
+    seller_whatsapp  = serializers.SerializerMethodField()
 
     class Meta:
         model  = ClassifiedListing
@@ -89,8 +92,10 @@ class ClassifiedListSerializer(TranslatableModelSerializer):
             "id", "translations", "listing_type", "condition",
             "price", "currency", "negotiable", "hide_price",
             "is_featured", "is_promoted", "is_preloved",
-            "primary_image", "location_name", "seller_name",
-            "seller_phone", "seller_whatsapp", "created_at",
+            "views_count", "location",
+            "primary_image", "images", "location_name",
+            "governorate_name", "governorate_id",
+            "seller_name", "seller_phone", "seller_whatsapp", "created_at",
         ]
 
     def get_primary_image(self, obj):
@@ -99,9 +104,24 @@ class ClassifiedListSerializer(TranslatableModelSerializer):
             return ClassifiedImageSerializer(img, context=self.context).data
         return None
 
+    def get_images(self, obj):
+        return ClassifiedImageSerializer(
+            obj.images.order_by("order", "id"), many=True, context=self.context
+        ).data
+
     def get_location_name(self, obj):
         if obj.location:
             return obj.location.safe_translation_getter("name", any_language=True)
+        return None
+
+    def get_governorate_id(self, obj):
+        if obj.location and obj.location.governorate:
+            return obj.location.governorate.pk
+        return None
+
+    def get_governorate_name(self, obj):
+        if obj.location and obj.location.governorate:
+            return obj.location.governorate.safe_translation_getter("name", any_language=True)
         return None
 
     def get_seller_name(self, obj):

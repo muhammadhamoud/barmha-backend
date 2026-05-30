@@ -3,6 +3,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
+from django.db.models import F
+from django.core.cache import cache
 
 from apps.core.pagination import BarmhaPagination
 from .filters import ServiceFilter
@@ -24,7 +26,7 @@ class ServiceListCreateView(generics.ListCreateAPIView):
     pagination_class = BarmhaPagination
     filter_backends  = [DjangoFilterBackend, OrderingFilter]
     filterset_class  = ServiceFilter
-    ordering_fields  = ["price", "created_at"]
+    ordering_fields  = ["price", "created_at", "updated_at", "is_featured", "is_promoted"]
 
     def get_queryset(self):
         qs = ServiceListing.objects.select_related("provider__user", "category", "location__governorate")
@@ -101,6 +103,18 @@ def provider_reviews(request, pk):
     paginator = BarmhaPagination()
     page = paginator.paginate_queryset(reviews, request)
     return paginator.get_paginated_response(ReviewSerializer(page, many=True, context={"request": request}).data)
+
+
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+def track_view(request, pk):
+    ip = request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", ""))
+    cache_key = f"view_services_{pk}_{ip}"
+    if not cache.get(cache_key):
+        ServiceListing.objects.filter(pk=pk, is_active=True).update(views_count=F("views_count") + 1)
+        cache.set(cache_key, True, 86400)
+    obj = ServiceListing.objects.filter(pk=pk).values("views_count").first()
+    return Response({"views_count": obj["views_count"] if obj else 0})
 
 
 class FeaturedServicesView(generics.ListAPIView):

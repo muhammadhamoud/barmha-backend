@@ -1,0 +1,13 @@
+{% extends "emails/base.html" %}
+{% block subject %}تأكيد بريدك الإلكتروني على برمها{% endblock %}
+{% block body %}
+  <h1>مرحباً، {{ first_name|default:username }}!</h1>
+  <p>شكراً لتسجيلك في <strong>برمها</strong>. يرجى تأكيد بريدك الإلكتروني بالنقر على الزر أدناه.</p>
+  <p>هذا الرابط صالح لمدة <strong>48 ساعة</strong>.</p>
+  <div class="cta-wrap">
+    <a class="cta-btn" href="{{ activation_url }}">تأكيد البريد الإلكتروني</a>
+  </div>
+  <hr class="divider" />
+  <p style="font-size:13px; color:#888;">إذا لم تُنشئ هذا الحساب، يمكنك تجاهل هذا البريد بأمان.</p>
+{% endblock %}
+{% block unsubscribe %}إذا لم تُنشئ حساباً على برمها، يمكنك تجاهل هذا البريد.{% endblock %}

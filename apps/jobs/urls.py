@@ -5,6 +5,7 @@ urlpatterns = [
     path("", views.JobListCreateView.as_view(), name="job-list"),
     path("<int:pk>/", views.JobDetailView.as_view(), name="job-detail"),
     path("<int:pk>/apply/", views.apply_to_job, name="job-apply"),
+    path("<int:pk>/view/", views.track_view, name="job-view-track"),
     path("<int:pk>/similar/", views.similar_jobs, name="job-similar"),
 
     path("categories/", views.JobCategoryListView.as_view(), name="job-categories"),

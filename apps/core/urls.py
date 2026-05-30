@@ -23,4 +23,6 @@ urlpatterns = [
     path("map-listings/",               views.map_listings),
     path("area-alerts/",                views.DrawnAreaAlertListCreateView.as_view()),
     path("area-alerts/<int:pk>/",       views.DrawnAreaAlertDetailView.as_view()),
+    path("section-counts/",             views.section_counts),
+    path("top-sellers/",                views.top_sellers),
 ]

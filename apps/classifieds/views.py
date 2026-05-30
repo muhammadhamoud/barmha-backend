@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from django.db.models import F
+from django.core.cache import cache
 
 from apps.core.pagination import BarmhaPagination
 from .filters import ClassifiedFilter
@@ -34,7 +35,7 @@ class ClassifiedListCreateView(generics.ListCreateAPIView):
     pagination_class = BarmhaPagination
     filter_backends  = [DjangoFilterBackend, OrderingFilter]
     filterset_class  = ClassifiedFilter
-    ordering_fields  = ["price", "created_at", "views_count"]
+    ordering_fields  = ["price", "created_at", "updated_at", "views_count", "is_featured", "is_promoted"]
 
     def get_queryset(self):
         qs = ClassifiedListing.objects.select_related("seller", "store", "category", "location__governorate").prefetch_related("images")
@@ -86,6 +87,18 @@ class ClassifiedDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         ClassifiedListing.objects.filter(pk=instance.pk).update(views_count=F("views_count") + 1)
         return Response(self.get_serializer(instance).data)
+
+
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+def track_view(request, pk):
+    ip = request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", ""))
+    cache_key = f"view_classifieds_{pk}_{ip}"
+    if not cache.get(cache_key):
+        ClassifiedListing.objects.filter(pk=pk, is_active=True).update(views_count=F("views_count") + 1)
+        cache.set(cache_key, True, 86400)
+    obj = ClassifiedListing.objects.filter(pk=pk).values("views_count").first()
+    return Response({"views_count": obj["views_count"] if obj else 0})
 
 
 @api_view(["GET"])

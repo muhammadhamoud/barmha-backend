@@ -5,6 +5,7 @@ urlpatterns = [
     path("", views.ClassifiedListCreateView.as_view(), name="classified-list"),
     path("<int:pk>/", views.ClassifiedDetailView.as_view(), name="classified-detail"),
     path("<int:pk>/images/", views.upload_classified_image, name="classified-image-upload"),
+    path("<int:pk>/view/", views.track_view, name="classified-view-track"),
     path("<int:pk>/similar/", views.similar_classifieds, name="classified-similar"),
 
     path("categories/", views.ClassifiedCategoryListView.as_view(), name="classified-categories"),

@@ -12,6 +12,10 @@ urlpatterns = [
     # ── Profile ───────────────────────────────────────────────────────────────
     path("profile/",                     views.ProfileView.as_view()),
     path("password/change/",             views.ChangePasswordView.as_view()),
+    path("password/reset/",              views.request_password_reset),
+    path("password/reset/confirm/",      views.confirm_password_reset),
+    path("activate/",                    views.ActivateEmailView.as_view()),
+    path("activate/resend/",             views.resend_activation_email),
 
     # ── Saved searches ────────────────────────────────────────────────────────
     path("saved-searches/",              views.SavedSearchListCreateView.as_view()),

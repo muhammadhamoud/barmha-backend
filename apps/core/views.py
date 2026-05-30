@@ -1,4 +1,5 @@
 import json
+from django.db import models
 from django.http import HttpResponse, JsonResponse
 from django.core.cache import cache
 from django.utils.decorators import method_decorator
@@ -1090,3 +1091,92 @@ class DrawnAreaAlertDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return DrawnAreaAlert.objects.filter(user=self.request.user)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def section_counts(request):
+    """GET /core/section-counts/?governorate=<id> — active listing counts per section (cached 5 min)."""
+    gov = request.query_params.get("governorate")
+    cache_key = f"section_counts_{gov or 'all'}"
+    cached = cache.get(cache_key)
+    if cached:
+        return Response(cached)
+
+    from apps.properties.models import PropertyListing
+    from apps.vehicles.models import VehicleListing
+    from apps.classifieds.models import ClassifiedListing
+    from apps.jobs.models import JobListing
+    from apps.services.models import ServiceListing
+    from apps.deals.models import Deal
+    from apps.events.models import Event
+
+    def _f(qs, gov):
+        return qs if not gov else qs.filter(location__governorate=gov)
+
+    counts = {
+        "properties":  _f(PropertyListing.objects.filter(is_active=True), gov).count(),
+        "vehicles":    _f(VehicleListing.objects.filter(is_active=True), gov).count(),
+        "classifieds": _f(ClassifiedListing.objects.filter(is_active=True), gov).count(),
+        "jobs":        _f(JobListing.objects.filter(is_active=True), gov).count(),
+        "services":    _f(ServiceListing.objects.filter(is_active=True), gov).count(),
+        "deals":       Deal.objects.filter(is_active=True).count() if not gov else
+                       Deal.objects.filter(is_active=True, merchant__location__governorate=gov).count(),
+        "events":      _f(Event.objects.filter(is_active=True), gov).count(),
+    }
+    cache.set(cache_key, counts, 300)
+    return Response(counts)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def top_sellers(request):
+    """GET /core/top-sellers/ — top 10 sellers ranked by active listing count."""
+    from django.db.models import Q, Count, Value, CharField
+    from django.db.models.functions import Coalesce
+    from apps.accounts.models import User
+    from apps.properties.models import PropertyListing
+    from apps.vehicles.models import VehicleListing
+    from apps.classifieds.models import ClassifiedListing
+    from apps.jobs.models import JobListing
+    from apps.services.models import ServiceListing
+
+    # Aggregate active listing counts per user across direct-FK sections.
+    # Services use a through-table (ServiceProvider) so excluded here.
+    users = (
+        User.objects
+        .annotate(
+            prop_count=Count("property_listings",   filter=Q(property_listings__is_active=True),   distinct=True),
+            veh_count =Count("vehicle_listings",    filter=Q(vehicle_listings__is_active=True),     distinct=True),
+            cls_count =Count("classified_listings", filter=Q(classified_listings__is_active=True),  distinct=True),
+            job_count =Count("job_listings",        filter=Q(job_listings__is_active=True),         distinct=True),
+        )
+        .annotate(
+            listing_count=models.ExpressionWrapper(
+                models.F("prop_count") + models.F("veh_count") + models.F("cls_count") +
+                models.F("job_count"),
+                output_field=models.IntegerField(),
+            )
+        )
+        .filter(listing_count__gt=0)
+        .order_by("-listing_count")
+        [:10]
+    )
+
+    result = []
+    for u in users:
+        try:
+            avatar_url = u.avatar_thumbnail.url if u.avatar_thumbnail else None
+        except Exception:
+            avatar_url = None
+
+        name = u.get_full_name() or u.username or u.email.split("@")[0]
+        result.append({
+            "id":            u.id,
+            "name":          name,
+            "avatar_url":    avatar_url,
+            "listing_count": u.listing_count,
+            "type":          "user",
+        })
+
+    return Response(result)

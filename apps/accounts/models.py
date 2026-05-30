@@ -97,6 +97,7 @@ class User(AbstractUser):
     avatar_thumbnail  = ImageSpecField(source="avatar", id="core:avatar")
     bio               = models.TextField(blank=True)
     is_verified       = models.BooleanField(default=False)
+    email_verified    = models.BooleanField(default=False)
     language          = models.CharField(max_length=5, default="ar")
     social_avatar_url = models.URLField(blank=True)
     created_at        = models.DateTimeField(auto_now_add=True)

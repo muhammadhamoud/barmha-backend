@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from django.db.models import F
+from django.core.cache import cache
 
 from django.conf import settings as django_settings
 from apps.core.pagination import BarmhaPagination
@@ -30,7 +31,7 @@ class PropertyListCreateView(generics.ListCreateAPIView):
     pagination_class = BarmhaPagination
     filter_backends  = [DjangoFilterBackend, OrderingFilter]
     filterset_class  = PropertyFilter
-    ordering_fields  = ["price", "created_at", "area_sqm", "views_count"]
+    ordering_fields  = ["price", "created_at", "updated_at", "area_sqm", "views_count", "is_featured", "is_promoted"]
 
     def get_queryset(self):
         qs = PropertyListing.objects.select_related("location__governorate", "agency", "agent").prefetch_related("images")
@@ -181,6 +182,18 @@ class EducationListView(generics.ListAPIView):
 
     def get_queryset(self):
         return EducationInstitution.objects.filter(inst_type=self.kwargs["inst_type"]).select_related("location")
+
+
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+def track_view(request, pk):
+    ip = request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", ""))
+    cache_key = f"view_properties_{pk}_{ip}"
+    if not cache.get(cache_key):
+        PropertyListing.objects.filter(pk=pk, is_active=True).update(views_count=F("views_count") + 1)
+        cache.set(cache_key, True, 86400)
+    obj = PropertyListing.objects.filter(pk=pk).values("views_count").first()
+    return Response({"views_count": obj["views_count"] if obj else 0})
 
 
 @api_view(["GET"])

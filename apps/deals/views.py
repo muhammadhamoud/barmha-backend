@@ -22,9 +22,16 @@ class DealListView(generics.ListAPIView):
 
     def get_queryset(self):
         now = timezone.now()
-        return Deal.objects.filter(
+        qs  = Deal.objects.filter(
             is_active=True, start_date__lte=now, end_date__gte=now
-        ).select_related("merchant", "category")
+        ).select_related("merchant", "category", "merchant__location__governorate")
+        gov = self.request.query_params.get("governorate")
+        if gov:
+            qs = qs.filter(merchant__location__governorate=gov)
+        cat = self.request.query_params.get("category")
+        if cat:
+            qs = qs.filter(category=cat)
+        return qs
 
 
 class DealDetailView(generics.RetrieveAPIView):

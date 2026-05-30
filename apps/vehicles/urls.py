@@ -5,6 +5,7 @@ urlpatterns = [
     path("", views.VehicleListCreateView.as_view(), name="vehicle-list"),
     path("<int:pk>/", views.VehicleDetailView.as_view(), name="vehicle-detail"),
     path("<int:pk>/images/", views.upload_vehicle_image, name="vehicle-image-upload"),
+    path("<int:pk>/view/", views.track_view, name="vehicle-view-track"),
     path("<int:pk>/similar/", views.similar_vehicles, name="vehicle-similar"),
     path("<int:pk>/contact/", views.contact_vehicle, name="vehicle-contact"),
 

@@ -31,9 +31,9 @@ class VehicleImageInline(admin.TabularInline):
 
 @admin.register(VehicleListing)
 class VehicleListingAdmin(admin.ModelAdmin):
-    list_display    = ["title", "listing_type", "category", "make", "model", "year",
+    list_display    = ["title", "listing_intent", "listing_type", "category", "make", "model", "year",
                        "price", "currency", "condition", "is_active", "is_featured", "created_at"]
-    list_filter     = ["listing_type", "category", "condition", "is_active", "is_featured", "currency"]
+    list_filter     = ["listing_intent", "listing_type", "category", "condition", "is_active", "is_featured", "currency"]
     search_fields   = ["title", "description"]
     raw_id_fields   = ["posted_by", "location", "make", "model", "showroom"]
     inlines         = [VehicleImageInline]

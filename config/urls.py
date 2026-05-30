@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.http import HttpResponse, Http404
 
 admin.site.site_header = "barmha.com Admin"
 admin.site.site_title  = "barmha Admin"
@@ -15,6 +16,21 @@ from apps.jobs.sitemaps import JobSitemap
 from apps.news.sitemaps import NewsSitemap
 from apps.news.feeds import LatestNewsFeed
 from apps.deals.feeds import LatestDealsFeed
+
+
+def serve_angular_spa(request, path=""):
+    """
+    Serve the Angular SPA index.html for every route not handled by Django.
+    WhiteNoise already serves the hashed JS/CSS chunks directly; this view
+    handles HTML5 pushState routes like /properties/123, /auth/login, etc.
+    """
+    index = settings.FRONTEND_DIST_DIR / "index.html"
+    if not index.exists():
+        raise Http404(
+            "Angular frontend not built. "
+            "Run: cd frontend && ng build"
+        )
+    return HttpResponse(index.read_bytes(), content_type="text/html; charset=utf-8")
 
 SITEMAPS = {
     "properties": PropertySitemap,
@@ -55,4 +71,12 @@ urlpatterns = [
     path("api/schema/",                  SpectacularAPIView.as_view(), name="schema"),
     path("api/schema/swagger-ui/",       SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/schema/redoc/",            SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    # Angular SPA catch-all — must be LAST.
+    # Matches every path that isn't already handled above (not /api/, /admin/,
+    # /static/, /media/, /sitemap*, /feeds/).
+    # WhiteNoise serves hashed JS/CSS/media chunks before Django URL routing
+    # even runs, so those assets are never caught here.
+    re_path(r"^(?!api/|admin/|static/|media/|sitemap|feeds/).*$",
+            serve_angular_spa, name="spa"),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
