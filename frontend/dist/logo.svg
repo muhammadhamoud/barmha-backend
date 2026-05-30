@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+    <defs>
+        <radialGradient id="bgGrad" cx="50%" cy="50%" r="75%" fx="50%" fy="45%">
+            <stop offset="0%" stop-color="#003b36"/>
+            <stop offset="45%" stop-color="#002623"/>
+            <stop offset="100%" stop-color="#001210"/>
+        </radialGradient>
+
+        <linearGradient id="goldGrad1" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#988561"/>
+            <stop offset="50%" stop-color="#d1c09f"/>
+            <stop offset="100%" stop-color="#fdf5e6"/>
+        </linearGradient>
+
+        <linearGradient id="goldGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#988561"/>
+            <stop offset="100%" stop-color="#4a3e26"/>
+        </linearGradient>
+
+        <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="10" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+
+        <filter id="glowLight" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+
+        <!-- Thicker large leaf -->
+        <path id="largeLeaf"
+              d="M 55,0
+                 A 150,150 0 0,1 205,-155
+                 A 190,190 0 0,0 15,-55
+                 A 62,62 0 0,1 55,0 Z" />
+
+        <!-- Thicker small leaf -->
+        <path id="smallLeaf"
+              d="M 34,0
+                 A 95,95 0 0,1 130,-105
+                 A 125,125 0 0,0 8,-34
+                 A 36,36 0 0,1 34,0 Z" />
+    </defs>
+
+    <!-- Square app icon background with rounded corners -->
+    <rect x="0" y="0" width="800" height="800" rx="180" ry="180" fill="url(#bgGrad)" />
+
+    <g transform="translate(400, 400)">
+        <circle cx="0" cy="0" r="260" fill="none" stroke="#988561" stroke-width="2" opacity="0.18" />
+        <circle cx="0" cy="0" r="180" fill="none" stroke="#988561" stroke-width="2" opacity="0.18" stroke-dasharray="8 10" />
+
+        <path d="M -260,0 A 260,260 0 0,1 260,0"
+              fill="none"
+              stroke="#988561"
+              stroke-width="5"
+              opacity="0.4"
+              stroke-linecap="round"
+              stroke-dasharray="80 400"
+              transform="rotate(25)" />
+
+        <path d="M -260,0 A 260,260 0 0,1 260,0"
+              fill="none"
+              stroke="#988561"
+              stroke-width="5"
+              opacity="0.4"
+              stroke-linecap="round"
+              stroke-dasharray="80 400"
+              transform="rotate(205)" />
+
+        <!-- Outer thicker spinning leaves -->
+        <g filter="url(#glow)">
+            <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0"
+                to="360"
+                dur="12s"
+                repeatCount="indefinite" />
+
+            <use href="#largeLeaf" fill="url(#goldGrad1)" opacity="0.95" transform="rotate(0)" />
+            <use href="#largeLeaf" fill="url(#goldGrad1)" opacity="0.95" transform="rotate(60)" />
+            <use href="#largeLeaf" fill="url(#goldGrad1)" opacity="0.95" transform="rotate(120)" />
+            <use href="#largeLeaf" fill="url(#goldGrad1)" opacity="0.95" transform="rotate(180)" />
+            <use href="#largeLeaf" fill="url(#goldGrad1)" opacity="0.95" transform="rotate(240)" />
+            <use href="#largeLeaf" fill="url(#goldGrad1)" opacity="0.95" transform="rotate(300)" />
+        </g>
+
+        <!-- Inner thicker spinning leaves -->
+        <g filter="url(#glowLight)">
+            <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="360"
+                to="0"
+                dur="8s"
+                repeatCount="indefinite" />
+
+            <use href="#smallLeaf" fill="url(#goldGrad2)" opacity="0.9" transform="rotate(0)" />
+            <use href="#smallLeaf" fill="url(#goldGrad2)" opacity="0.9" transform="rotate(45)" />
+            <use href="#smallLeaf" fill="url(#goldGrad2)" opacity="0.9" transform="rotate(90)" />
+            <use href="#smallLeaf" fill="url(#goldGrad2)" opacity="0.9" transform="rotate(135)" />
+            <use href="#smallLeaf" fill="url(#goldGrad2)" opacity="0.9" transform="rotate(180)" />
+            <use href="#smallLeaf" fill="url(#goldGrad2)" opacity="0.9" transform="rotate(225)" />
+            <use href="#smallLeaf" fill="url(#goldGrad2)" opacity="0.9" transform="rotate(270)" />
+            <use href="#smallLeaf" fill="url(#goldGrad2)" opacity="0.9" transform="rotate(315)" />
+        </g>
+
+        <!-- Fewer but bolder floating leaves for app icon readability -->
+        <g filter="url(#glowLight)" opacity="0.85">
+            <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0"
+                to="-360"
+                dur="16s"
+                repeatCount="indefinite" />
+
+            <use href="#smallLeaf" fill="url(#goldGrad1)" transform="translate(0,-140) scale(0.55) rotate(20)" />
+            <use href="#smallLeaf" fill="url(#goldGrad1)" transform="translate(125,0) scale(0.55) rotate(110)" />
+            <use href="#smallLeaf" fill="url(#goldGrad1)" transform="translate(0,140) scale(0.55) rotate(200)" />
+            <use href="#smallLeaf" fill="url(#goldGrad1)" transform="translate(-125,0) scale(0.55) rotate(290)" />
+        </g>
+
+        <!-- Center detail -->
+        <circle cx="0" cy="0" r="55" fill="none" stroke="#d1c09f" stroke-width="6" stroke-dasharray="18 10">
+            <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0"
+                to="360"
+                dur="6s"
+                repeatCount="indefinite" />
+        </circle>
+
+        <circle cx="0" cy="0" r="38" fill="none" stroke="#988561" stroke-width="4" />
+        <circle cx="0" cy="0" r="22" fill="url(#goldGrad1)" filter="url(#glowLight)" />
+    </g>
+</svg>

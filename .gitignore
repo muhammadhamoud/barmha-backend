@@ -61,7 +61,7 @@ coverage.xml
 
 # Build / packaging
 build/
-dist/
+# dist/
 *.egg-info/
 .eggs/
 pip-wheel-metadata/
@@ -104,6 +104,17 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # Angular / frontend builds
-dist/
+# dist/
+# .angular/
+# .cache/
+
+# Angular / frontend cache
 .angular/
 .cache/
+
+# Ignore frontend source build output if generated there
+/frontend/dist/
+
+# Do NOT ignore Django-served Angular build
+!/backend/frontend/dist/
+!/backend/frontend/dist/**

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "name": "برمها — إعلانات سوريا",
+  "short_name": "برمها",
+  "description": "أكبر موقع إعلانات مبوبة في سوريا. عقارات، سيارات، وظائف، خدمات والمزيد.",
+  "lang": "ar",
+  "dir": "rtl",
+  "theme_color": "#054239",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "start_url": "/?source=pwa",
+  "id": "/",
+  "categories": ["shopping", "business", "lifestyle"],
+  "icons": [
+    { "src": "icons/icon-72x72.png",   "sizes": "72x72",   "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-96x96.png",   "sizes": "96x96",   "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-144x144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-152x152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-384x384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "نشر إعلان",
+      "short_name": "نشر",
+      "description": "انشر إعلانك الجديد",
+      "url": "/post",
+      "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "بحث بالخريطة",
+      "short_name": "الخريطة",
+      "description": "ابحث على الخريطة",
+      "url": "/map",
+      "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "الرسائل",
+      "short_name": "رسائل",
+      "description": "محادثاتك",
+      "url": "/messages",
+      "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
+}

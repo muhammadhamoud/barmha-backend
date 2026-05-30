@@ -25,6 +25,10 @@ def serve_angular_spa(request, path=""):
     handles HTML5 pushState routes like /properties/123, /auth/login, etc.
     """
     index = settings.FRONTEND_DIST_DIR / "index.html"
+    
+    if "." in request.path.split("/")[-1]:
+        raise Http404("Static asset not found")
+
     if not index.exists():
         raise Http404(
             "Angular frontend not built. "
