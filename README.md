@@ -109,7 +109,7 @@ Receive broadcast:
 ```
 
 
-git init
+<!-- git init -->
 git add . & git add -f frontend/dist/ & git commit -m "first commit" & git push -u origin main
 
 git branch -M main
