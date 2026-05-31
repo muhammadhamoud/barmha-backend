@@ -55,13 +55,12 @@ ALLOWED_HOSTS += [
 ]
 
 # ── Cache ─────────────────────────────────────────────────────────────────────
-# DatabaseCache is shared across all Gunicorn workers — required for OTP codes.
-# LocMemCache (base.py default) is per-process, so worker A saves the code but
-# worker B can't read it, causing false "invalid code" errors.
-# After deploying run once: python manage.py createcachetable
+# FileBasedCache is shared across all Gunicorn workers via the filesystem —
+# no setup command needed.  LocMemCache (base.py default) is per-process: worker
+# A saves the OTP code, worker B handles verify → cache miss → "invalid code".
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
-        "LOCATION": "django_cache",
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": "/tmp/barmha_cache",
     }
 }
