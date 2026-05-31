@@ -38,7 +38,11 @@ def serve_angular_spa(request, path=""):
     index = dist / "index.html"
     if not index.exists():
         raise Http404("Angular frontend not built. Run: cd frontend && ng build")
-    return HttpResponse(index.read_bytes(), content_type="text/html; charset=utf-8")
+    response = HttpResponse(index.read_bytes(), content_type="text/html; charset=utf-8")
+    response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+    return response
 
 
 from django.http import HttpResponse

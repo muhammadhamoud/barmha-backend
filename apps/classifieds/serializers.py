@@ -91,7 +91,7 @@ class ClassifiedListSerializer(TranslatableModelSerializer):
         fields = [
             "id", "translations", "listing_type", "condition",
             "price", "currency", "negotiable", "hide_price",
-            "is_featured", "is_promoted", "is_preloved",
+            "is_active", "is_featured", "is_promoted", "is_preloved",
             "views_count", "location",
             "primary_image", "images", "location_name",
             "governorate_name", "governorate_id",

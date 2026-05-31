@@ -99,37 +99,39 @@ class PropertyCreateSerializer(serializers.ModelSerializer):
         # Pop nearby before passing to parent; handled separately in create/update
         self._nearby_data = attrs.pop("nearby", None)
 
-        # ── Coerce null → '' for NOT NULL CharFields sent as null by the frontend ──
+        # ── Coerce null → '' for NOT NULL CharFields — only for fields being set ──
+        # Guard with `field in attrs` so a partial PATCH (e.g. {is_active: false})
+        # does not inject "" into unrelated fields and corrupt existing data.
         for field in ("bedrooms", "price_period", "deposit", "furnishing", "contract_type"):
-            if attrs.get(field) is None:
+            if field in attrs and attrs[field] is None:
                 attrs[field] = ""
 
-        # ── Normalise purpose ────────────────────────────────────────────────
-        raw_purpose = attrs.get("purpose", "")
-        attrs["purpose"] = _PURPOSE_MAP.get(raw_purpose, "for_sale")
+        # ── Normalise purpose — only when purpose is being explicitly sent ───
+        if "purpose" in attrs:
+            attrs["purpose"] = _PURPOSE_MAP.get(attrs["purpose"] or "", "for_sale")
+        elif not self.partial:
+            attrs["purpose"] = "for_sale"
 
         # ── Map frontend category/property_type → model fields ───────────────
-        # The frontend sends the actual property type (apartment, villa…) as
-        # 'category' (it comes from the step1 category picker).  We use it as
-        # property_type and derive the correct model category from it.
-        raw_type = attrs.get("property_type") or attrs.get("category") or "other"
-
-        valid_model_categories = {"residential", "commercial", "international"}
-        if raw_type in valid_model_categories:
-            # Frontend already sent a valid model category — keep it as-is
-            attrs.setdefault("property_type", raw_type)
-        else:
-            attrs["property_type"] = raw_type
-            if raw_type in _COMMERCIAL_TYPES:
-                attrs["category"] = "commercial"
-            elif raw_type in _INTERNATIONAL_TYPES:
-                attrs["category"] = "international"
+        # Only run when the client is actually setting these fields.
+        if "property_type" in attrs or "category" in attrs:
+            raw_type = attrs.get("property_type") or attrs.get("category") or "other"
+            valid_model_categories = {"residential", "commercial", "international"}
+            if raw_type in valid_model_categories:
+                attrs.setdefault("property_type", raw_type)
             else:
-                attrs["category"] = "residential"
+                attrs["property_type"] = raw_type
+                if raw_type in _COMMERCIAL_TYPES:
+                    attrs["category"] = "commercial"
+                elif raw_type in _INTERNATIONAL_TYPES:
+                    attrs["category"] = "international"
+                else:
+                    attrs["category"] = "residential"
 
-        # ── Default price ────────────────────────────────────────────────────
-        if attrs.get("price") is None:
-            attrs["price"] = 0
+        # ── Default price — only on create, or when price is explicitly sent ─
+        if not self.partial or "price" in attrs:
+            if attrs.get("price") is None:
+                attrs["price"] = 0
 
         # ── Resolve governorate → location when no specific area chosen ───────
         from apps.core.utils import resolve_governorate_to_location
@@ -186,7 +188,7 @@ class PropertyListSerializer(serializers.ModelSerializer):
             "price", "currency", "price_period", "negotiable", "hide_price",
             "bedrooms", "bathrooms", "area_sqm", "furnishing",
             "floor_number", "total_floors", "views_count",
-            "is_featured", "is_promoted", "is_sold_rented",
+            "is_active", "is_featured", "is_promoted", "is_sold_rented",
             "location", "latitude", "longitude",
             "primary_image", "images", "area_name", "city_name",
             "governorate_name", "governorate_id",

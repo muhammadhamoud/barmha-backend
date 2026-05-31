@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
 
@@ -13,6 +13,7 @@ urlpatterns = [
     path("profile/",                     views.ProfileView.as_view()),
     path("password/change/",             views.ChangePasswordView.as_view()),
     path("password/reset/",              views.request_password_reset),
+    path("password/reset/verify/",       views.verify_reset_code),
     path("password/reset/confirm/",      views.confirm_password_reset),
     path("activate/",                    views.ActivateEmailView.as_view()),
     path("activate/resend/",             views.resend_activation_email),
@@ -44,9 +45,6 @@ urlpatterns = [
     path("social/google/",               views.GoogleLogin.as_view()),
     path("social/facebook/",             views.FacebookLogin.as_view()),
     path("social/apple/",                views.AppleLogin.as_view()),
-
-    path("api/v1/auth/", include("dj_rest_auth.urls")),
-    path("api/v1/auth/registration/", include("dj_rest_auth.registration.urls")),
 
     # ── Payments ──────────────────────────────────────────────────────────────
     path("payments/create-intent/",      views.CreatePaymentIntentView.as_view()),

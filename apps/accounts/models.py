@@ -26,7 +26,7 @@ class BarmhaUserManager(UserManager):
 
     def create_user(self, email, password=None, **extra_fields):
         if not email:
-            raise ValueError("Email address is required.")
+            raise ValueError("Email address is required (use a stub for phone-only accounts).")
         email = self.normalize_email(email)
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)

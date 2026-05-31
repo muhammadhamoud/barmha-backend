@@ -8,26 +8,44 @@ from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 
 
+# Normalise plural URL-style section names (sent by the Angular frontend) to the
+# singular form stored in the Conversation.listing_type field and used throughout.
+_PLURAL_TO_SINGULAR = {
+    "properties": "property",
+    "vehicles":   "vehicle",
+    "classifieds":"classified",
+    "jobs":       "job",
+    "services":   "service",
+    "deals":      "deal",
+    "events":     "event",
+}
+
+
+def _normalize_listing_type(listing_type: str) -> str:
+    return _PLURAL_TO_SINGULAR.get(listing_type, listing_type)
+
+
 def _resolve_listing_owner(listing_type: str, listing_id):
     """Look up the owner/seller user_id from a listing type + id.  Returns None on any failure."""
     if not listing_type or not listing_id:
         return None
+    listing_type = _normalize_listing_type(listing_type)
     try:
         if listing_type == "property":
             from apps.properties.models import PropertyListing
-            return PropertyListing.objects.get(pk=listing_id).owner_id
+            return PropertyListing.objects.get(pk=listing_id).posted_by_id
         if listing_type == "vehicle":
             from apps.vehicles.models import VehicleListing
-            return VehicleListing.objects.get(pk=listing_id).owner_id
+            return VehicleListing.objects.get(pk=listing_id).posted_by_id
         if listing_type == "classified":
             from apps.classifieds.models import ClassifiedListing
-            return ClassifiedListing.objects.get(pk=listing_id).owner_id
+            return ClassifiedListing.objects.get(pk=listing_id).posted_by_id
         if listing_type == "job":
             from apps.jobs.models import JobListing
-            return JobListing.objects.get(pk=listing_id).owner_id
+            return JobListing.objects.get(pk=listing_id).posted_by_id
         if listing_type == "service":
             from apps.services.models import ServiceListing
-            return ServiceListing.objects.get(pk=listing_id).owner_id
+            return ServiceListing.objects.get(pk=listing_id).posted_by_id
     except Exception:
         pass
     return None
@@ -54,7 +72,7 @@ class ConversationListView(generics.ListAPIView):
 @api_view(["POST"])
 @permission_classes([permissions.IsAuthenticated])
 def start_conversation(request):
-    listing_type  = request.data.get("listing_type", "")
+    listing_type  = _normalize_listing_type(request.data.get("listing_type", "") or "")
     listing_id    = request.data.get("listing_id")
     other_user_id = request.data.get("user_id")
 

@@ -108,7 +108,7 @@
     "OR": "أو",
     "OR_WITH_ACCOUNT": "أو باستخدام حسابك",
     "IDENTIFIER": "البريد الإلكتروني أو رقم الهاتف",
-    "IDENTIFIER_PLACEHOLDER": "you@example.com أو +963...",
+    "IDENTIFIER_PLACEHOLDER": "you@example.com أو 963...",
     "IDENTIFIER_REQUIRED": "يرجى إدخال البريد الإلكتروني أو رقم الهاتف",
     "REQUIRED": "مطلوب",
     "EMAIL_REQUIRED": "البريد مطلوب",
@@ -143,7 +143,6 @@
     "RESEND_CODE": "إعادة إرسال الرمز",
     "VERIFY_CODE": "تحقق من الرمز",
     "CONFIRM_CODE": "تأكيد الرمز",
-    "SET_NEW_PASSWORD": "تعيين كلمة المرور الجديدة",
     "BACK_TO_LOGIN": "العودة لتسجيل الدخول",
     "EMAIL_NOT_FOUND": "لم يُعثر على حساب بهذا البريد",
     "CODE_INVALID": "الرمز غير صحيح أو منتهي الصلاحية",
@@ -171,7 +170,16 @@
     "PASSWORD_RESET_DONE_SUB": "تم إعادة تعيين كلمة مرورك. يمكنك تسجيل الدخول الآن.",
     "VERIFY_EMAIL_BANNER": "يرجى تأكيد بريدك الإلكتروني. تحقق من صندوق الوارد للحصول على رابط التأكيد.",
     "RESEND_ACTIVATION": "إعادة الإرسال",
-    "SENT": "تم الإرسال!"
+    "SENT": "تم الإرسال!",
+    "REG_WITH_EMAIL": "بريد إلكتروني",
+    "REG_WITH_PHONE": "رقم الهاتف",
+    "EMAIL_OPTIONAL": "البريد الإلكتروني (اختياري)",
+    "PHONE_REQUIRED_REG": "رقم الهاتف مطلوب",
+    "PHONE_HINT": "رمز الدولة + الرقم، بدون مسافات، بدون + . مثال: 963",
+    "PHONE_ERR_PLUS": "أزل علامة + من البداية (اكتب مثلاً 963 وليس +963)",
+    "PHONE_ERR_DOUBLE_ZERO": "أزل 00 من البداية — أدخل رمز الدولة مباشرةً (مثال: 963)",
+    "PHONE_ERR_SPACE": "أزل جميع المسافات من رقم الهاتف",
+    "PHONE_ERR_INVALID": "أدخل رقم هاتف صحيح مع رمز الدولة بدون رموز خاصة (مثال: 963)"
   },
   "DASHBOARD": {
     "MY_LISTINGS": "إعلاناتي",
@@ -760,7 +768,10 @@
     },
     "ERRORS": {
       "TITLE_REQUIRED": "العنوان مطلوب",
-      "DESCRIPTION_REQUIRED": "الوصف مطلوب"
+      "DESCRIPTION_REQUIRED": "الوصف مطلوب",
+      "REQUIRED": "هذا الحقل مطلوب",
+      "TOO_SHORT": "النص قصير جداً (5 أحرف على الأقل)",
+      "INVALID_YEAR": "أدخل سنة صحيحة"
     },
     "AMENITIES": {
       "BALCONY": "شرفة",

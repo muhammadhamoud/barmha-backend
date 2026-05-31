@@ -69,16 +69,18 @@ class VehicleCreateSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
-        # ── Normalise listing_type + category from sub_type ──────────────────
-        listing_type = attrs.get("listing_type", "sale")
-        category     = attrs.get("category", "car")
-
-        if listing_type in _SUBTYPE_MAP:
-            listing_type, category = _SUBTYPE_MAP[listing_type]
-            attrs["listing_type"] = listing_type
-            attrs["category"]     = category
-        elif not category:
-            attrs["category"] = "car"
+        # ── Normalise listing_type + category — only when being explicitly set ─
+        # Guard with `in attrs` so a partial PATCH (e.g. {is_active: false})
+        # does not overwrite the existing listing_type/category with defaults.
+        if "listing_type" in attrs or "category" in attrs:
+            listing_type = attrs.get("listing_type", "sale")
+            category     = attrs.get("category", "car")
+            if listing_type in _SUBTYPE_MAP:
+                listing_type, category = _SUBTYPE_MAP[listing_type]
+                attrs["listing_type"] = listing_type
+                attrs["category"]     = category
+            elif not category:
+                attrs["category"] = "car"
 
         # ── Resolve model_name → VehicleModel FK ─────────────────────────────
         model_name = attrs.pop("model_name", "") or ""
@@ -88,17 +90,18 @@ class VehicleCreateSerializer(serializers.ModelSerializer):
             )
             attrs["model"] = vehicle_model
 
-        # ── Default price to 0 if omitted (negotiable listings) ──────────────
-        if attrs.get("price") is None:
-            attrs["price"] = 0
+        # ── Default price to 0 — only on create or when price is explicitly sent
+        if not self.partial or "price" in attrs:
+            if attrs.get("price") is None:
+                attrs["price"] = 0
 
-        # ── Coerce null CharField values to "" (DB column has no null=True) ──
+        # ── Coerce null CharField values to "" — only for fields being set ──
         for char_field in (
             "engine_size", "trim", "color_exterior", "color_interior",
             "fuel_type", "gear_type", "body_style", "wheel_drive",
             "condition", "import_source", "insurance_type",
         ):
-            if attrs.get(char_field) is None:
+            if char_field in attrs and attrs[char_field] is None:
                 attrs[char_field] = ""
 
         # ── Resolve governorate → location when no specific area chosen ───────
@@ -180,7 +183,7 @@ class VehicleListSerializer(serializers.ModelSerializer):
             "price", "currency", "negotiable", "hide_price",
             "mileage", "fuel_type", "gear_type", "condition",
             "engine_size", "cylinders", "wheel_drive", "views_count",
-            "is_featured", "is_promoted", "is_sold",
+            "is_active", "is_featured", "is_promoted", "is_sold",
             "location",
             "primary_image", "images", "area_name",
             "governorate_name", "governorate_id", "ai_summary",

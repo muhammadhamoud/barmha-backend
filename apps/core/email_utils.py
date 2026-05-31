@@ -75,3 +75,17 @@ def send_password_reset_email(user, token: str, language: str = "ar") -> None:
         "reset_url":  url,
     }
     _send(subject, f"emails/password_reset_{lang}.html", context, user.email)
+
+
+def send_password_reset_code_email(user, code: str, language: str = "ar") -> None:
+    """Send a 6-digit OTP code (not a link) for the in-app forgot-password flow."""
+    lang    = language if language in ("ar", "en") else "ar"
+    subject = "رمز إعادة تعيين كلمة المرور" if lang == "ar" else "Your Barmha password reset code"
+    context = {
+        "username":   user.username,
+        "first_name": user.first_name or "",
+        "lang":       lang,
+        "dir":        "rtl" if lang == "ar" else "ltr",
+        "code":       code,
+    }
+    _send(subject, f"emails/password_reset_code_{lang}.html", context, user.email)

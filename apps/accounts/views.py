@@ -61,7 +61,7 @@ class RegisterView(generics.CreateAPIView):
         user    = serializer.save()
         refresh = RefreshToken.for_user(user)
         lang = request.headers.get("Accept-Language", "ar")[:2]
-        if user.email:
+        if user.email and not user.email.endswith('@barmha.phone'):
             send_welcome_email(user, language=lang)
             send_activation_email(user, language=lang)
         return Response({
@@ -684,30 +684,57 @@ class ActivateEmailView(APIView):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def request_password_reset(request):
-    """POST /accounts/password/reset/ — sends branded reset email."""
-    from apps.core.email_utils import send_password_reset_email, make_activation_token
+    """POST /accounts/password/reset/ — generates 6-digit OTP, emails the code (not a link)."""
+    import random
+    from django.core.cache import cache
+    from apps.core.email_utils import send_password_reset_code_email
     email = request.data.get("email", "").strip().lower()
     if not email:
         return Response({"detail": "Email required."}, status=status.HTTP_400_BAD_REQUEST)
     try:
         user = User.objects.get(email__iexact=email)
     except User.DoesNotExist:
-        # Don't reveal whether the email exists
-        return Response({"detail": "If that email is registered you will receive a reset link shortly."})
-    lang  = request.headers.get("Accept-Language", "ar")[:2]
+        return Response({"detail": "If that email is registered you will receive a code shortly."})
+    code      = f"{random.randint(0, 999999):06d}"
+    cache_key = f"pwd_reset_code_{email}"
+    cache.set(cache_key, code, timeout=900)   # 15 minutes
+    lang = request.headers.get("Accept-Language", "ar")[:2]
+    send_password_reset_code_email(user, code=code, language=lang)
+    return Response({"detail": "If that email is registered you will receive a code shortly."})
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def verify_reset_code(request):
+    """POST /accounts/password/reset/verify/ — verifies OTP, returns a short-lived signed token."""
+    from django.core.cache import cache
+    from apps.core.email_utils import make_activation_token
+    email = (request.data.get("email") or "").strip().lower()
+    code  = (request.data.get("code") or "").strip()
+    if not email or not code:
+        return Response({"detail": "email and code are required."}, status=status.HTTP_400_BAD_REQUEST)
+    cache_key   = f"pwd_reset_code_{email}"
+    stored_code = cache.get(cache_key)
+    if not stored_code or stored_code != code:
+        return Response({"detail": "الرمز غير صحيح أو منتهي الصلاحية."}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        user = User.objects.get(email__iexact=email)
+    except User.DoesNotExist:
+        return Response({"detail": "الرمز غير صحيح أو منتهي الصلاحية."}, status=status.HTTP_400_BAD_REQUEST)
+    # Code is correct — delete it immediately so it can't be reused
+    cache.delete(cache_key)
     token = make_activation_token(user)
-    send_password_reset_email(user, token=token, language=lang)
-    return Response({"detail": "If that email is registered you will receive a reset link shortly."})
+    return Response({"token": token})
 
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def confirm_password_reset(request):
     """POST /accounts/password/reset/confirm/ — verifies token, sets new password."""
-    token    = request.data.get("token", "")
-    password = request.data.get("password", "")
-    if not token or not password:
-        return Response({"detail": "token and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+    token        = request.data.get("token", "")
+    new_password = request.data.get("new_password") or request.data.get("password", "")
+    if not token or not new_password:
+        return Response({"detail": "token and new_password are required."}, status=status.HTTP_400_BAD_REQUEST)
     try:
         pk   = verify_activation_token(token, max_age_seconds=3600)
         user = User.objects.get(pk=pk)
@@ -715,7 +742,7 @@ def confirm_password_reset(request):
         return Response({"detail": "Reset link has expired."}, status=status.HTTP_400_BAD_REQUEST)
     except (BadSignature, User.DoesNotExist, Exception):
         return Response({"detail": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
-    user.set_password(password)
+    user.set_password(new_password)
     user.save(update_fields=["password"])
     return Response({"detail": "Password reset successfully."})
 

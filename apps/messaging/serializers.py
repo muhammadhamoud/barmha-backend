@@ -14,31 +14,31 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
     def get_avatar_thumbnail(self, obj):
         try:
-            profile = obj.profile
-            if profile.avatar_thumbnail:
-                request = self.context.get("request")
-                url = profile.avatar_thumbnail.url
-                return request.build_absolute_uri(url) if request else url
+            spec = obj.avatar_thumbnail
+            if not spec:
+                return obj.social_avatar_url or None
+            url = spec.url
+            request = self.context.get("request")
+            return request.build_absolute_uri(url) if request else url
         except Exception:
-            pass
-        return None
+            return obj.social_avatar_url or None
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    sender_id = serializers.IntegerField(source="sender.id", read_only=True)
+    sender = serializers.IntegerField(source="sender.id", read_only=True)
 
     class Meta:
         model  = Message
-        fields = ["id", "conversation", "sender_id", "body", "image", "is_read", "created_at"]
-        read_only_fields = ["conversation", "sender_id", "is_read", "created_at"]
+        fields = ["id", "conversation", "sender", "body", "image", "is_read", "created_at"]
+        read_only_fields = ["conversation", "sender", "is_read", "created_at"]
 
 
 class LastMessageSerializer(serializers.ModelSerializer):
-    sender_id = serializers.IntegerField(source="sender.id", read_only=True)
+    sender = serializers.IntegerField(source="sender.id", read_only=True)
 
     class Meta:
         model  = Message
-        fields = ["id", "sender_id", "body", "image", "is_read", "created_at"]
+        fields = ["id", "sender", "body", "image", "is_read", "created_at"]
 
 
 class ConversationSerializer(serializers.ModelSerializer):

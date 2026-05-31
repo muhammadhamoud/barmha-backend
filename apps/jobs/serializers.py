@@ -95,7 +95,7 @@ class JobListSerializer(TranslatableModelSerializer):
         fields = [
             "id", "translations", "job_type", "experience", "gender",
             "min_salary", "max_salary", "currency", "salary_period", "hide_salary",
-            "is_remote", "is_featured", "quick_apply", "location",
+            "is_remote", "is_active", "is_featured", "quick_apply", "location",
             "company_name", "company_logo", "area_name",
             "governorate_name", "governorate_id",
             "ai_summary", "seller_phone", "seller_whatsapp",

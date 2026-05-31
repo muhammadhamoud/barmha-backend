@@ -67,7 +67,7 @@
     "PHONE": "Phone Number",
     "WHATSAPP": "WhatsApp",
     "BIO": "Bio",
-    "PHONE_INVALID": "Enter digits — do not include 0 or country code (e.g. +963)",
+    "PHONE_INVALID": "Enter digits — do not include 0 or country code (e.g. 963)",
     "OTP_VERIFY": "Phone Verification",
     "SEND_OTP": "Send Verification Code",
     "VERIFY": "Verify",
@@ -108,7 +108,7 @@
     "OR": "Or",
     "OR_WITH_ACCOUNT": "Or use your account",
     "IDENTIFIER": "Email or phone number",
-    "IDENTIFIER_PLACEHOLDER": "you@example.com or +963...",
+    "IDENTIFIER_PLACEHOLDER": "you@example.com or 963...",
     "IDENTIFIER_REQUIRED": "Please enter your email or phone number",
     "REQUIRED": "Required",
     "EMAIL_REQUIRED": "Email is required",
@@ -143,7 +143,6 @@
     "RESEND_CODE": "Resend code",
     "VERIFY_CODE": "Verify code",
     "CONFIRM_CODE": "Confirm code",
-    "SET_NEW_PASSWORD": "Set new password",
     "BACK_TO_LOGIN": "Back to login",
     "EMAIL_NOT_FOUND": "No account was found with this email",
     "CODE_INVALID": "The code is invalid or expired",
@@ -171,7 +170,16 @@
     "PASSWORD_RESET_DONE_SUB": "Your password has been reset. You can now sign in.",
     "VERIFY_EMAIL_BANNER": "Please verify your email address. Check your inbox for the confirmation link.",
     "RESEND_ACTIVATION": "Resend",
-    "SENT": "Sent!"
+    "SENT": "Sent!",
+    "REG_WITH_EMAIL": "Email",
+    "REG_WITH_PHONE": "Phone Number",
+    "EMAIL_OPTIONAL": "Email address (optional)",
+    "PHONE_REQUIRED_REG": "Phone number is required",
+    "PHONE_HINT": "Country code + number, no spaces, no + sign. Example: 963",
+    "PHONE_ERR_PLUS": "Remove the + sign from the beginning (e.g. type 963, not +963)",
+    "PHONE_ERR_DOUBLE_ZERO": "Remove 00 from the start — enter the country code directly (e.g. 963)",
+    "PHONE_ERR_SPACE": "Remove all spaces from the phone number",
+    "PHONE_ERR_INVALID": "Enter a valid phone number with country code and no special characters (e.g. 963)"
   },
   "DASHBOARD": {
     "MY_LISTINGS": "My Listings",
@@ -762,7 +770,10 @@
     },
     "ERRORS": {
       "TITLE_REQUIRED": "Title is required",
-      "DESCRIPTION_REQUIRED": "Description is required"
+      "DESCRIPTION_REQUIRED": "Description is required",
+      "REQUIRED": "This field is required",
+      "TOO_SHORT": "Too short (at least 5 characters)",
+      "INVALID_YEAR": "Enter a valid year"
     },
     "AMENITIES": {
       "BALCONY": "Balcony",
