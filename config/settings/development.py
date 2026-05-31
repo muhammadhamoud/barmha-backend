@@ -23,3 +23,14 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_CLASSES": [],
     "DEFAULT_THROTTLE_RATES": {},
 }
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+
+]

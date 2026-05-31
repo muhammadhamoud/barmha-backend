@@ -1287,3 +1287,6 @@ def home_page(request):
         "services":    services,
         "top_sellers": top_sellers,
     })
+
+
+

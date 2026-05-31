@@ -40,6 +40,42 @@ def serve_angular_spa(request, path=""):
         raise Http404("Angular frontend not built. Run: cd frontend && ng build")
     return HttpResponse(index.read_bytes(), content_type="text/html; charset=utf-8")
 
+
+from django.http import HttpResponse
+
+
+def data_deletion(request):
+    html = """
+    <h1>User Data Deletion Instructions</h1>
+
+    <p>
+        If you signed in using Facebook and want your data deleted from our application,
+        please send a deletion request to:
+    </p>
+
+    <p>
+        <strong>support@barmha.com</strong>
+    </p>
+
+    <p>Please include the following information:</p>
+
+    <ul>
+        <li>Your registered email address</li>
+        <li>Your Facebook account name or user ID, if available</li>
+        <li>A clear request to delete your account/data</li>
+    </ul>
+
+    <p>
+        Once we receive your request, we will delete your account data from our system
+        within 30 days, unless we are required to retain certain information for legal,
+        security, or fraud-prevention reasons.
+    </p>
+    """
+
+    return HttpResponse(html)
+
+
+
 SITEMAPS = {
     "properties": PropertySitemap,
     "vehicles":   VehicleSitemap,
@@ -79,6 +115,9 @@ urlpatterns = [
     path("api/schema/",                  SpectacularAPIView.as_view(), name="schema"),
     path("api/schema/swagger-ui/",       SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/schema/redoc/",            SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    
+    
+    path("data-deletion/",              data_deletion, name="data_deletion"),
     # Angular SPA catch-all — must be LAST.
     # Matches every path that isn't already handled above (not /api/, /admin/,
     # /static/, /media/, /sitemap*, /feeds/).
@@ -86,5 +125,6 @@ urlpatterns = [
     # even runs, so those assets are never caught here.
     re_path(r"^(?!api/|admin/|static/|media/|sitemap|feeds/)(?P<path>.*)$",
             serve_angular_spa, name="spa"),
+
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

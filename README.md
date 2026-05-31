@@ -115,6 +115,8 @@ git branch -M main
 git remote add origin https://github.com/muhammadhamoud/barmha-backend.git
 git push -u origin main
 
+git add -f frontend/dist/
+
 
 $env:PYTHONIOENCODING="utf-8"
 python -X utf8 manage.py dumpdata core.Governorate core.GovernorateTranslation core.Location core.LocationTranslation --indent 2 --settings=config.settings.production --output core_locations_fixture.json

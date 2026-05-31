@@ -468,6 +468,15 @@
     "SELLER_PROFILE": "Seller Listings",
     "SETTINGS": "Settings"
   },
+  "DRAFT": {
+    "BANNER_TITLE": "You have an unfinished listing",
+    "RESUME": "Resume",
+    "SECTION_PROPERTIES": "Property",
+    "SECTION_VEHICLES": "Vehicle",
+    "SECTION_CLASSIFIEDS": "Classified",
+    "SECTION_JOBS": "Job",
+    "SECTION_SERVICES": "Service"
+  },
   "SETTINGS": {
     "TITLE": "Settings",
     "APPEARANCE": "Appearance",

@@ -468,6 +468,15 @@
     "SELLER_PROFILE": "إعلانات البائع",
     "SETTINGS": "الإعدادات"
   },
+  "DRAFT": {
+    "BANNER_TITLE": "لديك إعلان غير مكتمل",
+    "RESUME": "استئناف",
+    "SECTION_PROPERTIES": "عقار",
+    "SECTION_VEHICLES": "مركبة",
+    "SECTION_CLASSIFIEDS": "إعلان مبوب",
+    "SECTION_JOBS": "وظيفة",
+    "SECTION_SERVICES": "خدمة"
+  },
   "SETTINGS": {
     "TITLE": "الإعدادات",
     "APPEARANCE": "المظهر",
