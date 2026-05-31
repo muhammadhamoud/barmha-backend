@@ -42,7 +42,7 @@ class PropertyListing(SeoMixin):
     area_sqm       = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     floor_number   = models.PositiveSmallIntegerField(null=True, blank=True)
     total_floors   = models.PositiveSmallIntegerField(null=True, blank=True)
-    office_capacity = models.CharField(max_length=20, blank=True)
+    office_capacity = models.CharField(max_length=20, blank=True, null=True, default=1)
 
     furnishing     = models.CharField(max_length=20, choices=FURNISHING_CHOICES, blank=True)
     contract_type  = models.CharField(max_length=10, choices=CONTRACT_CHOICES, blank=True)

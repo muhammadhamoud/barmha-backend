@@ -1,0 +1,27 @@
+[
+  {"model": "jobs.jobcategory", "pk": 1, "fields": {"slug": "technology",   "order": 0}},
+  {"model": "jobs.jobcategory", "pk": 2, "fields": {"slug": "engineering",  "order": 1}},
+  {"model": "jobs.jobcategory", "pk": 3, "fields": {"slug": "medical",      "order": 2}},
+  {"model": "jobs.jobcategory", "pk": 4, "fields": {"slug": "education",    "order": 3}},
+  {"model": "jobs.jobcategory", "pk": 5, "fields": {"slug": "finance",      "order": 4}},
+  {"model": "jobs.jobcategory", "pk": 6, "fields": {"slug": "sales",        "order": 5}},
+  {"model": "jobs.jobcategory", "pk": 7, "fields": {"slug": "hospitality",  "order": 6}},
+  {"model": "jobs.jobcategory", "pk": 8, "fields": {"slug": "construction", "order": 7}},
+
+  {"model": "jobs.jobcategorytranslation", "pk":  1, "fields": {"master": 1, "language_code": "ar", "name": "تقنية المعلومات"}},
+  {"model": "jobs.jobcategorytranslation", "pk":  2, "fields": {"master": 1, "language_code": "en", "name": "Technology"}},
+  {"model": "jobs.jobcategorytranslation", "pk":  3, "fields": {"master": 2, "language_code": "ar", "name": "هندسة"}},
+  {"model": "jobs.jobcategorytranslation", "pk":  4, "fields": {"master": 2, "language_code": "en", "name": "Engineering"}},
+  {"model": "jobs.jobcategorytranslation", "pk":  5, "fields": {"master": 3, "language_code": "ar", "name": "طب وصحة"}},
+  {"model": "jobs.jobcategorytranslation", "pk":  6, "fields": {"master": 3, "language_code": "en", "name": "Medical"}},
+  {"model": "jobs.jobcategorytranslation", "pk":  7, "fields": {"master": 4, "language_code": "ar", "name": "تعليم"}},
+  {"model": "jobs.jobcategorytranslation", "pk":  8, "fields": {"master": 4, "language_code": "en", "name": "Education"}},
+  {"model": "jobs.jobcategorytranslation", "pk":  9, "fields": {"master": 5, "language_code": "ar", "name": "مال وأعمال"}},
+  {"model": "jobs.jobcategorytranslation", "pk": 10, "fields": {"master": 5, "language_code": "en", "name": "Finance"}},
+  {"model": "jobs.jobcategorytranslation", "pk": 11, "fields": {"master": 6, "language_code": "ar", "name": "مبيعات وتسويق"}},
+  {"model": "jobs.jobcategorytranslation", "pk": 12, "fields": {"master": 6, "language_code": "en", "name": "Sales & Marketing"}},
+  {"model": "jobs.jobcategorytranslation", "pk": 13, "fields": {"master": 7, "language_code": "ar", "name": "ضيافة وسياحة"}},
+  {"model": "jobs.jobcategorytranslation", "pk": 14, "fields": {"master": 7, "language_code": "en", "name": "Hospitality"}},
+  {"model": "jobs.jobcategorytranslation", "pk": 15, "fields": {"master": 8, "language_code": "ar", "name": "بناء ومقاولات"}},
+  {"model": "jobs.jobcategorytranslation", "pk": 16, "fields": {"master": 8, "language_code": "en", "name": "Construction"}}
+]

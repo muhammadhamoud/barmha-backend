@@ -6,15 +6,16 @@ from apps.core.validators import validate_image_size, validate_image_type
 
 
 class VehicleMake(models.Model):
-    name    = models.CharField(max_length=100, unique=True)
-    logo    = ProcessedImageField(
+    name     = models.CharField(max_length=100, unique=True)
+    logo     = ProcessedImageField(
         upload_to="vehicles/makes/",
         processors=[Transpose(), ResizeToFill(200, 200)],
         format="WEBP", options={"quality": 80},
         blank=True, null=True,
         validators=[validate_image_size, validate_image_type],
     )
-    popular = models.BooleanField(default=False)
+    logo_url = models.URLField(blank=True, help_text="CDN URL for the brand logo (used when no uploaded logo exists)")
+    popular  = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["name"]

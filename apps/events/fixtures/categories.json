@@ -1,0 +1,18 @@
+[
+  {"model": "events.eventcategory", "pk": 1, "fields": {"slug": "cultural"}},
+  {"model": "events.eventcategory", "pk": 2, "fields": {"slug": "sports"}},
+  {"model": "events.eventcategory", "pk": 3, "fields": {"slug": "business"}},
+  {"model": "events.eventcategory", "pk": 4, "fields": {"slug": "educational"}},
+  {"model": "events.eventcategory", "pk": 5, "fields": {"slug": "social"}},
+
+  {"model": "events.eventcategorytranslation", "pk":  1, "fields": {"master": 1, "language_code": "ar", "name": "ثقافي"}},
+  {"model": "events.eventcategorytranslation", "pk":  2, "fields": {"master": 1, "language_code": "en", "name": "Cultural"}},
+  {"model": "events.eventcategorytranslation", "pk":  3, "fields": {"master": 2, "language_code": "ar", "name": "رياضي"}},
+  {"model": "events.eventcategorytranslation", "pk":  4, "fields": {"master": 2, "language_code": "en", "name": "Sports"}},
+  {"model": "events.eventcategorytranslation", "pk":  5, "fields": {"master": 3, "language_code": "ar", "name": "أعمال"}},
+  {"model": "events.eventcategorytranslation", "pk":  6, "fields": {"master": 3, "language_code": "en", "name": "Business"}},
+  {"model": "events.eventcategorytranslation", "pk":  7, "fields": {"master": 4, "language_code": "ar", "name": "تعليمي"}},
+  {"model": "events.eventcategorytranslation", "pk":  8, "fields": {"master": 4, "language_code": "en", "name": "Educational"}},
+  {"model": "events.eventcategorytranslation", "pk":  9, "fields": {"master": 5, "language_code": "ar", "name": "اجتماعي"}},
+  {"model": "events.eventcategorytranslation", "pk": 10, "fields": {"master": 5, "language_code": "en", "name": "Social"}}
+]

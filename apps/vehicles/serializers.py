@@ -115,11 +115,23 @@ class VehicleModelSerializer(serializers.ModelSerializer):
 
 
 class VehicleMakeSerializer(serializers.ModelSerializer):
-    models = VehicleModelSerializer(many=True, read_only=True)
+    models       = VehicleModelSerializer(many=True, read_only=True)
+    logo_display = serializers.SerializerMethodField()
 
     class Meta:
         model  = VehicleMake
-        fields = ["id", "name", "logo", "popular", "models"]
+        fields = ["id", "name", "logo", "logo_url", "logo_display", "popular", "models"]
+
+    def get_logo_display(self, obj):
+        """Uploaded logo takes priority; falls back to CDN logo_url."""
+        request = self.context.get("request")
+        if obj.logo:
+            try:
+                url = obj.logo.url
+                return request.build_absolute_uri(url) if request else url
+            except Exception:
+                pass
+        return obj.logo_url or None
 
 
 class VehicleImageSerializer(serializers.ModelSerializer):

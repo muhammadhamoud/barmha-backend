@@ -25,4 +25,5 @@ urlpatterns = [
     path("area-alerts/<int:pk>/",       views.DrawnAreaAlertDetailView.as_view()),
     path("section-counts/",             views.section_counts),
     path("top-sellers/",                views.top_sellers),
+    path("home/",                       views.home_page),
 ]

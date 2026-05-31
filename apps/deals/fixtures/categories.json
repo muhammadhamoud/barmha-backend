@@ -1,0 +1,21 @@
+[
+  {"model": "deals.dealcategory", "pk": 1, "fields": {"slug": "restaurants",   "icon": "restaurant",    "order": 0}},
+  {"model": "deals.dealcategory", "pk": 2, "fields": {"slug": "shopping",      "icon": "shopping_bag",  "order": 1}},
+  {"model": "deals.dealcategory", "pk": 3, "fields": {"slug": "beauty_spa",    "icon": "spa",           "order": 2}},
+  {"model": "deals.dealcategory", "pk": 4, "fields": {"slug": "travel",        "icon": "flight",        "order": 3}},
+  {"model": "deals.dealcategory", "pk": 5, "fields": {"slug": "entertainment", "icon": "theater_comedy","order": 4}},
+  {"model": "deals.dealcategory", "pk": 6, "fields": {"slug": "health",        "icon": "fitness_center", "order": 5}},
+
+  {"model": "deals.dealcategorytranslation", "pk":  1, "fields": {"master": 1, "language_code": "ar", "name": "مطاعم"}},
+  {"model": "deals.dealcategorytranslation", "pk":  2, "fields": {"master": 1, "language_code": "en", "name": "Restaurants"}},
+  {"model": "deals.dealcategorytranslation", "pk":  3, "fields": {"master": 2, "language_code": "ar", "name": "تسوق"}},
+  {"model": "deals.dealcategorytranslation", "pk":  4, "fields": {"master": 2, "language_code": "en", "name": "Shopping"}},
+  {"model": "deals.dealcategorytranslation", "pk":  5, "fields": {"master": 3, "language_code": "ar", "name": "تجميل وسبا"}},
+  {"model": "deals.dealcategorytranslation", "pk":  6, "fields": {"master": 3, "language_code": "en", "name": "Beauty & Spa"}},
+  {"model": "deals.dealcategorytranslation", "pk":  7, "fields": {"master": 4, "language_code": "ar", "name": "سفر وسياحة"}},
+  {"model": "deals.dealcategorytranslation", "pk":  8, "fields": {"master": 4, "language_code": "en", "name": "Travel"}},
+  {"model": "deals.dealcategorytranslation", "pk":  9, "fields": {"master": 5, "language_code": "ar", "name": "ترفيه"}},
+  {"model": "deals.dealcategorytranslation", "pk": 10, "fields": {"master": 5, "language_code": "en", "name": "Entertainment"}},
+  {"model": "deals.dealcategorytranslation", "pk": 11, "fields": {"master": 6, "language_code": "ar", "name": "صحة ولياقة"}},
+  {"model": "deals.dealcategorytranslation", "pk": 12, "fields": {"master": 6, "language_code": "en", "name": "Health & Fitness"}}
+]

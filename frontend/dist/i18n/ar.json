@@ -464,7 +464,28 @@
     "CONTACT": "تواصل معنا",
     "HELP": "مركز المساعدة",
     "AREA_ALERTS": "تنبيهات المنطقة",
-    "FEATURED": "إعلانات مميزة"
+    "FEATURED": "إعلانات مميزة",
+    "SELLER_PROFILE": "إعلانات البائع",
+    "SETTINGS": "الإعدادات"
+  },
+  "SETTINGS": {
+    "TITLE": "الإعدادات",
+    "APPEARANCE": "المظهر",
+    "THEME": "السمة",
+    "THEME_LIGHT": "فاتح",
+    "THEME_DARK": "داكن",
+    "LANGUAGE": "اللغة",
+    "CURRENCY": "العملة",
+    "ACCOUNT": "الحساب",
+    "APP": "التطبيق",
+    "HELP": "مركز المساعدة",
+    "CONTACT": "تواصل معنا",
+    "PRIVACY": "سياسة الخصوصية",
+    "TERMS": "الشروط والأحكام"
+  },
+  "SELLER": {
+    "LISTINGS": "إعلان",
+    "NO_LISTINGS": "لا توجد إعلانات نشطة لهذا البائع."
   },
   "SEARCH": {
     "SEARCH_BTN": "بحث",

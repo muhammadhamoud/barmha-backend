@@ -1,1 +1,0 @@
-import{a as m}from"./chunk-7PVPJ53H.js";import{da as i,pb as n}from"./chunk-GMXCYUST.js";var a=class t{theme=i(m);transform(e,r="name",p="ar"){if(!e)return"";let c=this.theme.lang();return e[c]?.[r]??e[p]?.[r]??Object.values(e)[0]?.[r]??""}static \u0275fac=function(r){return new(r||t)};static \u0275pipe=n({name:"translatedValue",type:t,pure:!1})};export{a};

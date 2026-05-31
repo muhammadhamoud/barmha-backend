@@ -24,8 +24,13 @@ python manage.py makemigrations <app>
 python manage.py createsuperuser
 
 # Seed data
-python manage.py loaddata apps/core/fixtures/governorates.json
-python manage.py loaddata apps/vehicles/fixtures/makes.json
+# python manage.py loaddata apps/core/fixtures/core_locations_fixture.json
+# python manage.py loaddata apps/vehicles/fixtures/makes.json
+
+python manage.py load_vehicles
+python manage.py load_categories
+python manage.py load_categories --no-flush
+
 
 # Elasticsearch
 python manage.py search_index --rebuild    # rebuild all indices

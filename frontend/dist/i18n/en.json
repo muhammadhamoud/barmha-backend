@@ -464,7 +464,28 @@
     "CONTACT": "Contact Us",
     "HELP": "Help Center",
     "AREA_ALERTS": "Area Alerts",
-    "FEATURED": "Featured Listings"
+    "FEATURED": "Featured Listings",
+    "SELLER_PROFILE": "Seller Listings",
+    "SETTINGS": "Settings"
+  },
+  "SETTINGS": {
+    "TITLE": "Settings",
+    "APPEARANCE": "Appearance",
+    "THEME": "Theme",
+    "THEME_LIGHT": "Light",
+    "THEME_DARK": "Dark",
+    "LANGUAGE": "Language",
+    "CURRENCY": "Currency",
+    "ACCOUNT": "Account",
+    "APP": "App",
+    "HELP": "Help Center",
+    "CONTACT": "Contact Us",
+    "PRIVACY": "Privacy Policy",
+    "TERMS": "Terms of Service"
+  },
+  "SELLER": {
+    "LISTINGS": "listings",
+    "NO_LISTINGS": "This seller has no active listings."
   },
   "SEARCH": {
     "SEARCH_BTN": "Search",

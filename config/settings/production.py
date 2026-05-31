@@ -32,3 +32,24 @@ sentry_sdk.init(
     traces_sample_rate=0.1,
     send_default_pii=False,
 )
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://barmha.com",
+    "https://barmha.com",
+    "http://www.barmha.com",
+    "https://www.barmha.com",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://barmha.com",
+    "https://barmha.com",
+    "http://www.barmha.com",
+    "https://www.barmha.com",
+    "https://api.barmha.com",
+]
+
+ALLOWED_HOSTS += [
+    "barmha.com",
+    "www.barmha.com",
+]

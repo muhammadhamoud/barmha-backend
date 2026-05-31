@@ -55,4 +55,7 @@ urlpatterns = [
 
     # ── User search (for listing sharing recipient picker) ────────────────────
     path("search/",                      views.UserSearchView.as_view()),
+
+    # ── Public seller profile ─────────────────────────────────────────────────
+    path("users/<int:pk>/listings/",     views.UserPublicListingsView.as_view()),
 ]

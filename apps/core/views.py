@@ -1169,6 +1169,8 @@ def top_sellers(request):
             avatar_url = u.avatar_thumbnail.url if u.avatar_thumbnail else None
         except Exception:
             avatar_url = None
+        if not avatar_url:
+            avatar_url = u.social_avatar_url or None
 
         name = u.get_full_name() or u.username or u.email.split("@")[0]
         result.append({
@@ -1180,3 +1182,108 @@ def top_sellers(request):
         })
 
     return Response(result)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def home_page(request):
+    """
+    GET /core/home/
+    Single endpoint that returns everything the home page needs.
+    For each section: returns featured/promoted items; falls back to most-recent
+    if none exist so carousels are never empty.
+    """
+    from apps.properties.models import PropertyListing
+    from apps.properties.serializers import PropertyListSerializer
+    from apps.vehicles.models import VehicleListing
+    from apps.vehicles.serializers import VehicleListSerializer
+    from apps.classifieds.models import ClassifiedListing
+    from apps.classifieds.serializers import ClassifiedListSerializer
+    from apps.jobs.models import JobListing
+    from apps.jobs.serializers import JobListSerializer
+    from apps.services.models import ServiceListing
+    from apps.services.serializers import ServiceListingSerializer
+    from apps.accounts.models import User
+    from django.db.models import Q, Count
+
+    ctx  = {"request": request}
+    SIZE = 20
+
+    def fetch(Model, Serializer, active_filter, featured_filter, ordering_featured, ordering_recent):
+        qs = Model.objects.filter(**active_filter, **featured_filter).order_by(*ordering_featured)[:SIZE]
+        if not qs.exists():
+            qs = Model.objects.filter(**active_filter).order_by(*ordering_recent)[:SIZE]
+        return Serializer(qs, many=True, context=ctx).data
+
+    properties = fetch(
+        PropertyListing, PropertyListSerializer,
+        {"is_active": True}, {"is_featured": True},
+        ["-is_featured", "-is_promoted", "-updated_at"],
+        ["-created_at"],
+    )
+    vehicles = fetch(
+        VehicleListing, VehicleListSerializer,
+        {"is_active": True}, {"is_featured": True},
+        ["-is_featured", "-is_promoted", "-updated_at"],
+        ["-created_at"],
+    )
+    classifieds = fetch(
+        ClassifiedListing, ClassifiedListSerializer,
+        {"is_active": True}, {"is_featured": True},
+        ["-is_featured", "-is_promoted", "-updated_at"],
+        ["-created_at"],
+    )
+    jobs = fetch(
+        JobListing, JobListSerializer,
+        {"is_active": True}, {"is_featured": True},
+        ["-is_featured", "-updated_at"],
+        ["-created_at"],
+    )
+    services = fetch(
+        ServiceListing, ServiceListingSerializer,
+        {"is_active": True}, {"is_featured": True},
+        ["-is_featured", "-is_promoted", "-updated_at"],
+        ["-created_at"],
+    )
+
+    top_sellers_qs = (
+        User.objects
+        .annotate(
+            prop_count=Count("property_listings",   filter=Q(property_listings__is_active=True),   distinct=True),
+            veh_count =Count("vehicle_listings",    filter=Q(vehicle_listings__is_active=True),     distinct=True),
+            cls_count =Count("classified_listings", filter=Q(classified_listings__is_active=True),  distinct=True),
+            job_count =Count("job_listings",        filter=Q(job_listings__is_active=True),         distinct=True),
+        )
+        .annotate(
+            listing_count=models.ExpressionWrapper(
+                models.F("prop_count") + models.F("veh_count") + models.F("cls_count") + models.F("job_count"),
+                output_field=models.IntegerField(),
+            )
+        )
+        .filter(listing_count__gt=0)
+        .order_by("-listing_count")[:10]
+    )
+    top_sellers = []
+    for u in top_sellers_qs:
+        try:
+            avatar_url = u.avatar_thumbnail.url if u.avatar_thumbnail else None
+        except Exception:
+            avatar_url = None
+        if not avatar_url:
+            avatar_url = u.social_avatar_url or None
+        top_sellers.append({
+            "id":            u.id,
+            "name":          u.get_full_name() or u.username or u.email.split("@")[0],
+            "avatar_url":    avatar_url,
+            "listing_count": u.listing_count,
+            "type":          "user",
+        })
+
+    return Response({
+        "properties":  properties,
+        "vehicles":    vehicles,
+        "classifieds": classifieds,
+        "jobs":        jobs,
+        "services":    services,
+        "top_sellers": top_sellers,
+    })

@@ -55,35 +55,34 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model  = User
         fields = ["id","email","first_name","last_name","phone","whatsapp",
-                  "avatar","avatar_thumbnail","user_type","bio","is_verified",
+                  "avatar","avatar_thumbnail","social_avatar_url","user_type","bio","is_verified",
                   "email_verified","is_staff","language","created_at"]
-        read_only_fields = ["id","email","is_verified","email_verified","is_staff","created_at"]
+        read_only_fields = ["id","email","is_verified","email_verified","is_staff","created_at","social_avatar_url"]
         # email is read-only: users cannot change it via the profile API.
         # is_staff is read-only: only set via Django admin.
         # username intentionally omitted from the public profile API
 
     def get_avatar_thumbnail(self, obj):
         """
-        Safely serialize the imagekit ImageSpecField.
-        Returns an absolute URL when possible, relative URL as fallback, or
-        None if the spec hasn't been generated yet (e.g. right after first save).
+        Returns the best available avatar URL:
+        1. Imagekit-processed thumbnail of the uploaded avatar
+        2. Raw uploaded avatar URL
+        3. Social provider avatar URL (Google / Facebook picture)
         """
         try:
             spec = obj.avatar_thumbnail   # ImageSpecField descriptor → SpecFile
             if not spec:
-                return None
+                return obj.social_avatar_url or None
             url = spec.url                # triggers synchronous cache generation
             request = self.context.get("request")
             return request.build_absolute_uri(url) if request else url
         except Exception:
-            # Thumbnail not ready yet / imagekit error / libwebp missing on server
-            # Fall back to the raw avatar URL so the frontend at least has something.
             try:
                 url = obj.avatar.url
                 request = self.context.get("request")
                 return request.build_absolute_uri(url) if request else url
             except Exception:
-                return None
+                return obj.social_avatar_url or None
 
 
 class UserPublicSerializer(serializers.ModelSerializer):
@@ -99,7 +98,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
         try:
             spec = obj.avatar_thumbnail
             if not spec:
-                return None
+                return obj.social_avatar_url or None
             url = spec.url
             request = self.context.get("request")
             return request.build_absolute_uri(url) if request else url
@@ -109,7 +108,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
                 request = self.context.get("request")
                 return request.build_absolute_uri(url) if request else url
             except Exception:
-                return None
+                return obj.social_avatar_url or None
 
     def get_full_name(self, obj):
         return obj.get_full_name() or obj.username or obj.email.split("@")[0]

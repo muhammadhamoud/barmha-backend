@@ -591,6 +591,61 @@ class UserSearchView(generics.ListAPIView):
         )
 
 
+class UserPublicListingsView(APIView):
+    """
+    GET /accounts/users/<pk>/listings/
+    Returns the seller's public profile + all their active listings across sections.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        from django.shortcuts import get_object_or_404
+        from apps.properties.models import PropertyListing
+        from apps.properties.serializers import PropertyListSerializer
+        from apps.vehicles.models import VehicleListing
+        from apps.vehicles.serializers import VehicleListSerializer
+        from apps.classifieds.models import ClassifiedListing
+        from apps.classifieds.serializers import ClassifiedListSerializer
+        from apps.jobs.models import JobListing
+        from apps.jobs.serializers import JobListSerializer
+
+        user = get_object_or_404(User, pk=pk)
+        ctx  = {"request": request}
+
+        sections = [
+            ("properties",  PropertyListing.objects.filter(posted_by=user, is_active=True).order_by("-created_at"),  PropertyListSerializer),
+            ("vehicles",    VehicleListing.objects.filter(posted_by=user, is_active=True).order_by("-created_at"),   VehicleListSerializer),
+            ("classifieds", ClassifiedListing.objects.filter(posted_by=user, is_active=True).order_by("-created_at"), ClassifiedListSerializer),
+            ("jobs",        JobListing.objects.filter(posted_by=user, is_active=True).order_by("-created_at"),        JobListSerializer),
+        ]
+
+        listings = []
+        for section, qs, SerializerClass in sections:
+            for item in SerializerClass(qs, many=True, context=ctx).data:
+                listings.append({"section": section, "item": item})
+
+        listings.sort(key=lambda x: x["item"].get("created_at", ""), reverse=True)
+
+        try:
+            avatar_url = user.avatar_thumbnail.url if user.avatar_thumbnail else None
+        except Exception:
+            avatar_url = None
+        if not avatar_url:
+            avatar_url = user.social_avatar_url or None
+        name = user.get_full_name() or user.username or user.email.split("@")[0]
+
+        return Response({
+            "seller": {
+                "id":            user.id,
+                "name":          name,
+                "avatar_url":    avatar_url,
+                "listing_count": len(listings),
+                "type":          "user",
+            },
+            "listings": listings,
+        })
+
+
 class ActivateEmailView(APIView):
     """GET /accounts/activate/?token=<signed-token> — verifies token, sets email_verified=True."""
     permission_classes = [AllowAny]
@@ -606,9 +661,23 @@ class ActivateEmailView(APIView):
             return Response({"detail": "Link expired."}, status=status.HTTP_400_BAD_REQUEST)
         except (BadSignature, User.DoesNotExist, Exception):
             return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+        # if not user.email_verified:
+        #     user.email_verified = True
+        #     user.save(update_fields=["email_verified"])
+        
+        update_fields = []
+
         if not user.email_verified:
             user.email_verified = True
-            user.save(update_fields=["email_verified"])
+            update_fields.append("email_verified")
+
+        if not user.is_verified:
+            user.is_verified = True
+            update_fields.append("is_verified")
+
+        if update_fields:
+            user.save(update_fields=update_fields)
+        
         return Response({"detail": "Email verified successfully."})
 
 
