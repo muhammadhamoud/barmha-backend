@@ -3,14 +3,7 @@ from .base import *  # noqa
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
-# Enable Django Channels for WebSocket support in development
-INSTALLED_APPS += ["channels"]  # type: ignore[name-defined]
 ASGI_APPLICATION = "config.asgi.application"
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    }
-}
 
 # Allow Google / Facebook OAuth popups to communicate with the opener window.
 # Django's SecurityMiddleware defaults to "same-origin" which blocks window.closed

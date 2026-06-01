@@ -118,7 +118,7 @@ git push -u origin main
 
 
 
-git clone https://github.com/muhammadhamoud/barmha-backend.git
+
 
 
 $env:PYTHONIOENCODING="utf-8"
@@ -127,3 +127,9 @@ python -X utf8 manage.py dumpdata core.Governorate core.GovernorateTranslation c
 
 
 ng build --configuration production
+
+
+source /home/hamoudsc/virtualenv/barmha.com/3.12/bin/activate && cd /home/hamoudsc/barmha.com
+
+git clone https://github.com/muhammadhamoud/barmha-backend.git
+

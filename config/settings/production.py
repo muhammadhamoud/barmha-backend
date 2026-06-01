@@ -1,4 +1,5 @@
 from .base import *  # noqa
+from celery.schedules import crontab
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
@@ -54,13 +55,51 @@ ALLOWED_HOSTS += [
     "www.barmha.com",
 ]
 
-# ── Cache ─────────────────────────────────────────────────────────────────────
-# FileBasedCache is shared across all Gunicorn workers via the filesystem —
-# no setup command needed.  LocMemCache (base.py default) is per-process: worker
-# A saves the OTP code, worker B handles verify → cache miss → "invalid code".
+# ── Redis connection ──────────────────────────────────────────────────────────
+# .env only needs one line:
+#   REDIS_URL=redis://localhost:6379/0
+REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
+
+# ── Cache (django-redis) ──────────────────────────────────────────────────────
+# Shared across all Gunicorn workers → OTP codes, DRF throttle counters, and
+# session data are consistent regardless of which worker handles the request.
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": "/tmp/barmha_cache",
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SOCKET_CONNECT_TIMEOUT": 5,
+            "SOCKET_TIMEOUT": 5,
+            "IGNORE_EXCEPTIONS": True,   # degrade gracefully if Redis is down
+        },
+        "KEY_PREFIX": "barmha",
     }
+}
+
+# ── Django Channels (WebSocket) ───────────────────────────────────────────────
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [REDIS_URL]},
+    }
+}
+
+# ── Celery ────────────────────────────────────────────────────────────────────
+CELERY_BROKER_URL    = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT   = ["json"]
+CELERY_TASK_SERIALIZER  = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+
+CELERY_BEAT_SCHEDULE = {
+    "expire-listings-daily": {
+        "task": "apps.core.tasks.expire_old_listings",
+        "schedule": crontab(hour=0, minute=0),
+    },
+    "send-saved-search-alerts": {
+        "task": "apps.accounts.tasks.notify_saved_search_users",
+        "schedule": crontab(hour=8, minute=0),
+    },
 }

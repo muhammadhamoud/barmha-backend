@@ -815,6 +815,43 @@ def _safe_thumb(request, img):
     return request.build_absolute_uri(url) if url else None
 
 
+_GOV_CENTERS = {
+    "damascus":    (33.5102, 36.2919),
+    "rif_dimashq": (33.5000, 36.5000),
+    "aleppo":      (36.2021, 37.1343),
+    "homs":        (34.7324, 36.7137),
+    "hama":        (35.1318, 36.7520),
+    "latakia":     (35.5317, 35.7911),
+    "tartus":      (34.8956, 35.8866),
+    "idlib":       (35.9300, 36.6341),
+    "deir_ezzor":  (35.3336, 40.1408),
+    "hasakah":     (36.5118, 40.7421),
+    "raqqa":       (35.9497, 39.0094),
+    "daraa":       (32.6189, 36.1021),
+    "suwayda":     (32.7086, 36.5673),
+    "quneitra":    (33.1261, 35.8243),
+}
+
+
+def _resolve_lat_lng(lat, lng, location=None, governorate=None):
+    """Return (lat, lng) falling back to location coords then governorate centre."""
+    if lat is not None and lng is not None:
+        return float(lat), float(lng)
+    if location is not None:
+        if location.latitude is not None and location.longitude is not None:
+            return float(location.latitude), float(location.longitude)
+        gov = getattr(location, "governorate", None) or governorate
+        if gov:
+            center = _GOV_CENTERS.get(gov.slug)
+            if center:
+                return center
+    if governorate is not None:
+        center = _GOV_CENTERS.get(governorate.slug)
+        if center:
+            return center
+    return None, None
+
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def map_listings(request):
@@ -856,7 +893,7 @@ def map_listings(request):
         """Build a MapListing dict and optionally apply polygon filter."""
         if lat is None or lng is None:
             return None
-        lat_f, lng_f = float(lat), float(lng)
+        lat_f, lng_f = lat, lng  # already floats from _resolve_lat_lng
         if polygon_pts and not _point_in_polygon(lng_f, lat_f, polygon_pts):
             return None
         return {
@@ -875,14 +912,21 @@ def map_listings(request):
     # ── PROPERTIES ───────────────────────────────────────────────────────────
     if not section_filter or section_filter == "properties":
         from apps.properties.models import PropertyListing
+        from django.db.models import Q as DQ
         qs = (PropertyListing.objects
-              .filter(is_active=True, latitude__isnull=False, longitude__isnull=False)
+              .filter(is_active=True)
+              .filter(
+                  DQ(latitude__isnull=False) |
+                  DQ(location__latitude__isnull=False)
+              )
               .select_related("location__governorate")
               .prefetch_related("images"))
         if lat_min is not None:
             qs = qs.filter(
-                latitude__gte=lat_min, latitude__lte=lat_max,
-                longitude__gte=lng_min, longitude__lte=lng_max,
+                DQ(latitude__gte=lat_min, latitude__lte=lat_max,
+                   longitude__gte=lng_min, longitude__lte=lng_max) |
+                DQ(location__latitude__gte=lat_min, location__latitude__lte=lat_max,
+                   location__longitude__gte=lng_min, location__longitude__lte=lng_max)
             )
         if price_min:
             try:
@@ -897,11 +941,12 @@ def map_listings(request):
         if gov_id:
             qs = qs.filter(location__governorate_id=gov_id)
         for obj in qs[:page_size]:
+            lat, lng = _resolve_lat_lng(obj.latitude, obj.longitude, obj.location)
             img = (obj.images.filter(is_primary=True).first() or obj.images.first())
             thumb = _safe_thumb(request, img) if img else None
             loc_name = _loc_display(obj.location)
             item = _to_map_item(
-                obj, "properties", obj.latitude, obj.longitude,
+                obj, "properties", lat, lng,
                 obj.title, obj.price if not obj.hide_price else None,
                 obj.currency, thumb, loc_name, obj.created_at,
             )
@@ -912,8 +957,7 @@ def map_listings(request):
     if not section_filter or section_filter == "vehicles":
         from apps.vehicles.models import VehicleListing
         qs = (VehicleListing.objects
-              .filter(is_active=True, location__isnull=False,
-                      location__latitude__isnull=False, location__longitude__isnull=False)
+              .filter(is_active=True, location__isnull=False)
               .select_related("location__governorate")
               .prefetch_related("images"))
         if lat_min is not None:
@@ -934,11 +978,12 @@ def map_listings(request):
         if gov_id:
             qs = qs.filter(location__governorate_id=gov_id)
         for obj in qs[:page_size]:
+            lat, lng = _resolve_lat_lng(None, None, obj.location)
             img = (obj.images.filter(is_primary=True).first() or obj.images.first())
             thumb = _safe_thumb(request, img) if img else None
             loc_name = _loc_display(obj.location)
             item = _to_map_item(
-                obj, "vehicles", obj.location.latitude, obj.location.longitude,
+                obj, "vehicles", lat, lng,
                 obj.title, obj.price if not obj.hide_price else None,
                 obj.currency, thumb, loc_name, obj.created_at,
             )
@@ -949,8 +994,7 @@ def map_listings(request):
     if not section_filter or section_filter == "classifieds":
         from apps.classifieds.models import ClassifiedListing
         qs = (ClassifiedListing.objects
-              .filter(is_active=True, location__isnull=False,
-                      location__latitude__isnull=False, location__longitude__isnull=False)
+              .filter(is_active=True, location__isnull=False)
               .select_related("location__governorate")
               .prefetch_related("images"))
         if lat_min is not None:
@@ -971,12 +1015,13 @@ def map_listings(request):
         if gov_id:
             qs = qs.filter(location__governorate_id=gov_id)
         for obj in qs[:page_size]:
+            lat, lng = _resolve_lat_lng(None, None, obj.location)
             img = (obj.images.filter(is_primary=True).first() or obj.images.first())
             thumb = _safe_thumb(request, img) if img else None
             title = obj.safe_translation_getter("title", any_language=True) or ""
             loc_name = _loc_display(obj.location)
             item = _to_map_item(
-                obj, "classifieds", obj.location.latitude, obj.location.longitude,
+                obj, "classifieds", lat, lng,
                 title, obj.price if not obj.hide_price else None,
                 obj.currency, thumb, loc_name, obj.created_at,
             )
@@ -987,8 +1032,7 @@ def map_listings(request):
     if not section_filter or section_filter == "jobs":
         from apps.jobs.models import JobListing
         qs = (JobListing.objects
-              .filter(is_active=True, location__isnull=False,
-                      location__latitude__isnull=False, location__longitude__isnull=False)
+              .filter(is_active=True, location__isnull=False)
               .select_related("location__governorate"))
         if lat_min is not None:
             qs = qs.filter(
@@ -998,11 +1042,12 @@ def map_listings(request):
         if gov_id:
             qs = qs.filter(location__governorate_id=gov_id)
         for obj in qs[:page_size]:
+            lat, lng = _resolve_lat_lng(None, None, obj.location)
             title = obj.safe_translation_getter("title", any_language=True) or ""
             salary = obj.min_salary if (not getattr(obj, "hide_salary", False) and obj.min_salary) else None
             loc_name = _loc_display(obj.location)
             item = _to_map_item(
-                obj, "jobs", obj.location.latitude, obj.location.longitude,
+                obj, "jobs", lat, lng,
                 title, salary, obj.currency, None, loc_name, obj.created_at,
             )
             if item:
@@ -1012,8 +1057,7 @@ def map_listings(request):
     if not section_filter or section_filter == "services":
         from apps.services.models import ServiceListing
         qs = (ServiceListing.objects
-              .filter(is_active=True, location__isnull=False,
-                      location__latitude__isnull=False, location__longitude__isnull=False)
+              .filter(is_active=True, location__isnull=False)
               .select_related("location__governorate"))
         if lat_min is not None:
             qs = qs.filter(
@@ -1033,11 +1077,11 @@ def map_listings(request):
         if gov_id:
             qs = qs.filter(location__governorate_id=gov_id)
         for obj in qs[:page_size]:
-            # ServiceListing has no images — thumbnail is None
+            lat, lng = _resolve_lat_lng(None, None, obj.location)
             title = obj.safe_translation_getter("title", any_language=True) or ""
             loc_name = _loc_display(obj.location)
             item = _to_map_item(
-                obj, "services", obj.location.latitude, obj.location.longitude,
+                obj, "services", lat, lng,
                 title, obj.price, obj.currency, None, loc_name, obj.created_at,
             )
             if item:

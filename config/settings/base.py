@@ -39,8 +39,7 @@ THIRD_PARTY_APPS = [
     "allauth.socialaccount.providers.apple",
     "dj_rest_auth",
     "dj_rest_auth.registration",
-    # TODO: Uncomment for production — requires Redis (ASGI + WebSocket chat).
-    # "channels",
+    "channels",
     "django_cleanup.apps.CleanupConfig",
     # TODO: Uncomment for production — requires a running Elasticsearch instance.
     # "django_elasticsearch_dsl",
@@ -107,9 +106,7 @@ TEMPLATES = [
 
 
 WSGI_APPLICATION = "config.wsgi.application"
-# TODO: Uncomment for production ASGI server (Daphne/Uvicorn) — required for WebSocket chat.
-#       Shared hosting runs WSGI only (Passenger); WebSocket is unavailable there.
-# ASGI_APPLICATION = "config.asgi.application"
+ASGI_APPLICATION  = "config.asgi.application"
 
 DATABASES = {
     # "default": {
@@ -217,66 +214,24 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
-# TODO: Uncomment for production — requires Redis broker + running Celery worker/beat daemons.
-#       On shared hosting: async tasks (OTP SMS, listing expiry, saved-search alerts) are
-#       unavailable.  Run them manually via management commands if needed, e.g.:
-#         python manage.py shell -c "from apps.core.tasks import expire_old_listings; expire_old_listings()"
-#
-# # ── Celery ──────────────────────────────────────────────────────────────────
-# CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")
-# CELERY_RESULT_BACKEND = env("REDIS_URL", default="redis://localhost:6379/0")
-# CELERY_ACCEPT_CONTENT = ["json"]
-# CELERY_TASK_SERIALIZER = "json"
-# CELERY_RESULT_SERIALIZER = "json"
-# CELERY_TIMEZONE = TIME_ZONE
-#
-# from celery.schedules import crontab
-# CELERY_BEAT_SCHEDULE = {
-#     "expire-listings-daily": {
-#         "task": "apps.core.tasks.expire_old_listings",
-#         "schedule": crontab(hour=0, minute=0),
-#     },
-#     "send-saved-search-alerts": {
-#         "task": "apps.accounts.tasks.notify_saved_search_users",
-#         "schedule": crontab(hour=8, minute=0),
-#     },
-# }
-
 # ── Cache ─────────────────────────────────────────────────────────────────────
-# Shared hosting: use in-process memory cache (no Redis available).
-# Choices/governorates still get cached; cache is lost on each request worker
-# restart but that is acceptable for a shared-hosting launch.
+# Development default: in-process memory cache.
+# Production overrides this with django-redis in production.py.
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "barmha-cache",
     }
 }
-# TODO: Replace with Redis cache for production — faster, shared across workers.
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django_redis.cache.RedisCache",
-#         "LOCATION": env("REDIS_URL", default="redis://localhost:6379/1"),
-#         "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
-#     }
-# }
 
 # ── Channels ──────────────────────────────────────────────────────────────────
-# Shared hosting: use in-memory channel layer (single process, no cross-worker
-# broadcasting).  WebSocket chat endpoints are unreachable on WSGI hosting anyway;
-# the REST messaging API (/messaging/) continues to work normally.
+# Development default: in-memory channel layer (single process).
+# Production overrides this with channels_redis in production.py.
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
     }
 }
-# TODO: Replace with Redis channel layer for production ASGI deployment.
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {"hosts": [env("REDIS_URL", default="redis://localhost:6379/0")]},
-#     }
-# }
 
 # TODO: Uncomment for production — requires a running Elasticsearch instance.
 #       Search falls back to ORM icontains automatically when ES is unavailable
