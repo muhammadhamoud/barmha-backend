@@ -123,3 +123,7 @@ git clone https://github.com/muhammadhamoud/barmha-backend.git
 
 $env:PYTHONIOENCODING="utf-8"
 python -X utf8 manage.py dumpdata core.Governorate core.GovernorateTranslation core.Location core.LocationTranslation --indent 2 --settings=config.settings.production --output core_locations_fixture.json
+
+
+
+ng build --configuration production

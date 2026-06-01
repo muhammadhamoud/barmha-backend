@@ -175,7 +175,7 @@
     "REG_WITH_PHONE": "Phone Number",
     "EMAIL_OPTIONAL": "Email address (optional)",
     "PHONE_REQUIRED_REG": "Phone number is required",
-    "PHONE_HINT": "Country code + number, no spaces, no + sign. Example: 963",
+    "PHONE_HINT": "Country code + number, no spaces, no + sign. e.g 963",
     "PHONE_ERR_PLUS": "Remove the + sign from the beginning (e.g. type 963, not +963)",
     "PHONE_ERR_DOUBLE_ZERO": "Remove 00 from the start — enter the country code directly (e.g. 963)",
     "PHONE_ERR_SPACE": "Remove all spaces from the phone number",
