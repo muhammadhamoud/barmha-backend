@@ -1,13 +1,23 @@
+from django.contrib.auth import get_user_model
 from django.urls import path
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
+
+
+class SafeTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        try:
+            return super().post(request, *args, **kwargs)
+        except get_user_model().DoesNotExist:
+            raise InvalidToken("User no longer exists")
 
 urlpatterns = [
     # ── Auth ──────────────────────────────────────────────────────────────────
     path("register/",                    views.RegisterView.as_view()),
     path("login/",                       views.LoginView.as_view()),   # flexible: email OR phone
     path("logout/",                      views.LogoutView.as_view()),
-    path("token/refresh/",               TokenRefreshView.as_view()),  # JWT refresh (unchanged)
+    path("token/refresh/",               SafeTokenRefreshView.as_view()),
 
     # ── Profile ───────────────────────────────────────────────────────────────
     path("profile/",                     views.ProfileView.as_view()),

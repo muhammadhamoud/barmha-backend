@@ -5,7 +5,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
 
 DEBUG = False
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["barmha.com", "www.barmha.com"])
 
 # ── S3 / CloudFront ───────────────────────────────────────────────────────────
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
