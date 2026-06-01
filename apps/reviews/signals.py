@@ -1,21 +1,29 @@
-﻿from django.db.models.signals import post_save, post_delete
+﻿import logging
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from .models import Review
+
+logger = logging.getLogger("apps.reviews")
+
+
+def _dispatch_rating_update(subject_type, subject_id):
+    try:
+        from apps.reviews.tasks import update_avg_rating
+        update_avg_rating.delay(subject_type, subject_id)
+    except Exception as e:
+        logger.warning("Could not queue update_avg_rating task: %s", e)
 
 
 @receiver(post_save, sender=Review)
 def on_review_save(sender, instance, created, **kwargs):
-    from apps.reviews.tasks import update_avg_rating
-    update_avg_rating.delay(instance.subject_type, instance.subject_id)
-
+    _dispatch_rating_update(instance.subject_type, instance.subject_id)
     if created:
         _notify_subject_owner(instance)
 
 
 @receiver(post_delete, sender=Review)
 def on_review_delete(sender, instance, **kwargs):
-    from apps.reviews.tasks import update_avg_rating
-    update_avg_rating.delay(instance.subject_type, instance.subject_id)
+    _dispatch_rating_update(instance.subject_type, instance.subject_id)
 
 
 def _notify_subject_owner(review: Review):
