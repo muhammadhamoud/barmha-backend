@@ -63,6 +63,8 @@ class PropertyListing(SeoMixin):
     is_promoted    = models.BooleanField(default=False)
     is_sold_rented = models.BooleanField(default=False)
     views_count    = models.PositiveIntegerField(default=0)
+    avg_rating     = models.DecimalField(max_digits=3, decimal_places=2, default=0)
+    ratings_count  = models.PositiveIntegerField(default=0)
     expires_at     = models.DateTimeField(null=True, blank=True)
 
     created_at     = models.DateTimeField(auto_now_add=True)

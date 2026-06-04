@@ -1,13 +1,12 @@
-﻿from django.contrib.sitemaps import Sitemap
 from django.utils import timezone
 from datetime import timedelta
+from apps.core.sitemaps import BarmhaSitemap
 from .models import NewsArticle
 
 
-class NewsSitemap(Sitemap):
+class NewsSitemap(BarmhaSitemap):
     changefreq = "hourly"
     priority   = 1.0
-    protocol   = "https"
 
     def items(self):
         cutoff = timezone.now() - timedelta(days=2)
@@ -18,4 +17,4 @@ class NewsSitemap(Sitemap):
 
     def location(self, obj):
         slug = obj.safe_translation_getter("slug", any_language=True) or str(obj.pk)
-        return f"/api/v1/news/{slug}/"
+        return f"/news/{slug}/"

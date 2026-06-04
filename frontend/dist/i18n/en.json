@@ -19,6 +19,9 @@
     "SAVED_SEARCHES": "Saved Searches",
     "POST": "Post",
     "ADMIN_ADS": "Ad Management",
+    "ADMIN_REPORTS": "Reports",
+    "ADMIN_RATINGS": "Ratings",
+    "ADMIN_FEEDBACK": "Site Feedback",
     "AREA_ALERTS": "Area Alerts",
     "TERMS": "Terms of Service",
     "PRIVACY": "Privacy Policy",
@@ -276,6 +279,11 @@
     "SHARE_SYSTEM": "Share via System",
     "COPY_LINK": "Copy Link",
     "WA_INTRO": "Hi, I'm interested in this listing",
+    "RATING": {
+      "NO_RATINGS": "No ratings yet",
+      "RATE_THIS": "Rate this listing:",
+      "YOUR_RATING": "Your rating: {{n}} ★"
+    },
     "FLAGS": {
       "NEGOTIABLE":    "Negotiable",
       "NO_COMMISSION": "No Commission",
@@ -378,6 +386,64 @@
     "LOAD_MORE": "Load More"
   },
   "ADMIN": {
+    "REPORTS": {
+      "TITLE": "Reports & Moderation",
+      "ALL_STATUSES": "All Statuses",
+      "ALL_SECTIONS": "All Sections",
+      "STATUS_PENDING": "Pending",
+      "STATUS_REVIEWED": "Reviewed",
+      "STATUS_ACTION_TAKEN": "Action Taken",
+      "STATUS_DISMISSED": "Dismissed",
+      "LOAD_ERROR": "Failed to load reports",
+      "EMPTY": "No reports found",
+      "COL_ID": "#",
+      "COL_REPORTER": "Reporter",
+      "COL_LISTING": "Listing",
+      "COL_REASON": "Reason",
+      "COL_DETAILS": "Details",
+      "COL_IP": "IP Address",
+      "COL_STATUS": "Status",
+      "COL_DATE": "Date",
+      "COL_ACTIONS": "Actions",
+      "ANONYMOUS": "Anonymous",
+      "REASON_SPAM": "Spam",
+      "REASON_FAKE": "Misleading / Fake",
+      "REASON_INAPPROPRIATE": "Inappropriate",
+      "REASON_SCAM": "Scam",
+      "REASON_WRONG_CATEGORY": "Wrong Category",
+      "REASON_OTHER": "Other",
+      "DISMISS": "Dismiss",
+      "REMOVE_LISTING": "Remove Listing",
+      "BLOCK_USER": "Block User",
+      "BLOCK_USER_IP": "Block User + IP",
+      "ACTION_FAILED": "Action failed",
+      "DISMISSED": "Dismissed",
+      "LISTING_REMOVED": "Listing removed",
+      "USER_BLOCKED": "User blocked",
+      "USER_IP_BLOCKED": "User & IP blocked",
+      "RESOLVED": "Resolved",
+      "PAGE_INFO": "Showing {{shown}} of {{total}}"
+    },
+    "RATINGS": {
+      "TOTAL": "ratings",
+      "EMPTY": "No ratings found.",
+      "ALL_STARS": "All Stars",
+      "USER": "User",
+      "SECTION": "Section",
+      "LISTING": "Listing",
+      "STARS": "Stars",
+      "DATE": "Date",
+      "ACTIONS": "Actions"
+    },
+    "FEEDBACK": {
+      "TOTAL": "entries",
+      "EMPTY": "No feedback found.",
+      "AVG_STARS": "Avg. Rating",
+      "RATED": "Rated",
+      "WITH_TEXT": "With Text",
+      "NO_STARS": "No rating",
+      "ANON": "Anonymous"
+    },
     "ADS": {
       "TITLE": "Advertisement Management",
       "TAB_BANNERS": "Banners",
@@ -466,6 +532,9 @@
     "RESET_PASSWORD": "Reset Password",
     "NOT_FOUND": "404 — Page Not Found",
     "ADMIN_ADS": "Ad Management",
+    "ADMIN_REPORTS": "Reports",
+    "ADMIN_RATINGS": "Listing Ratings",
+    "ADMIN_FEEDBACK": "Site Feedback",
     "SEARCH": "Search Results",
     "LEGAL_TERMS": "Terms of Service",
     "LEGAL_PRIVACY": "Privacy Policy",
@@ -485,6 +554,24 @@
     "SECTION_JOBS": "Job",
     "SECTION_SERVICES": "Service"
   },
+  "COOKIE": {
+    "TITLE": "We use cookies",
+    "BODY": "Choose which cookies you allow. Essential cookies are always on. Analytics cookies help us improve the site. Advertising cookies personalise ads shown to you.",
+    "ESSENTIAL": "Essential (required)",
+    "ANALYTICS": "Analytics",
+    "ADVERTISING": "Advertising",
+    "ESSENTIAL_ONLY": "Essential Only",
+    "ACCEPT_SELECTED": "Accept Selected",
+    "ACCEPT_ALL": "Accept All"
+  },
+  "FEEDBACK_WIDGET": {
+    "TITLE": "How's your experience on barmha?",
+    "PLACEHOLDER": "Tell us more... (optional)",
+    "SUBMIT": "Send Feedback",
+    "SKIP": "Maybe later",
+    "THANKS": "Thanks for your feedback!",
+    "ARIA": "Site feedback"
+  },
   "SETTINGS": {
     "TITLE": "Settings",
     "APPEARANCE": "Appearance",
@@ -498,7 +585,8 @@
     "HELP": "Help Center",
     "CONTACT": "Contact Us",
     "PRIVACY": "Privacy Policy",
-    "TERMS": "Terms of Service"
+    "TERMS": "Terms of Service",
+    "ADMIN": "Admin Tools"
   },
   "SELLER": {
     "LISTINGS": "listings",
@@ -548,7 +636,8 @@
     "OLDEST": "Oldest",
     "PRICE_LOW": "Price: Low to High",
     "PRICE_HIGH": "Price: High to Low",
-    "MOST_VIEWED": "Most Viewed"
+    "MOST_VIEWED": "Most Viewed",
+    "TOP_RATED": "Top Rated"
   },
   "MAP": {
     "SEARCH_AREA": "Search This Area",
@@ -881,7 +970,8 @@
     "NEWEST": "Newest",
     "PRICE_LOW": "Price: Low to High",
     "PRICE_HIGH": "Price: High to Low",
-    "MOST_VIEWED": "Most Viewed"
+    "MOST_VIEWED": "Most Viewed",
+    "TOP_RATED": "Top Rated"
   }
 },
 "UI": {
@@ -1045,8 +1135,10 @@
   "LISTING_CARD": {
     "VIEW_LISTING": "View listing",
     "PREV_IMAGE": "Previous image",
-    "NEXT_IMAGE": "Next image"
+    "NEXT_IMAGE": "Next image",
+    "READ_MORE": "Read more"
   },
+  "MORE": "more",
   "IMAGE_GALLERY": {
     "IMAGE_ALT": "Image",
     "PREVIOUS": "Previous image",
@@ -1065,6 +1157,7 @@
     "FILTER_COUNT": "{{count}} filters",
     "DELETE_CONFIRM": "Delete this saved search?",
     "SAVED_TOAST": "Search saved!",
+    "SAVE_ERROR": "Failed to save search. Please try again.",
     "ALREADY_SAVED": "Already saved",
     "SAVE_SEARCH": "Save search",
     "SAVE_SEARCH_NAME": "Name this search (optional)",

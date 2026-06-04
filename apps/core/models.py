@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from parler.models import TranslatableModel, TranslatedFields
 from django.utils.text import slugify
@@ -245,3 +246,49 @@ class DrawnAreaAlert(models.Model):
 
     def __str__(self):
         return f"{self.user} – {self.name or self.polygon_wkt[:40]}"
+
+
+class ListingRating(models.Model):
+    """One rating (1-5 stars) per user per listing across all sections."""
+    SECTION_CHOICES = [
+        ("properties",  "Properties"),
+        ("vehicles",    "Vehicles"),
+        ("classifieds", "Classifieds"),
+        ("jobs",        "Jobs"),
+        ("services",    "Services"),
+    ]
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="listing_ratings")
+    section    = models.CharField(max_length=20, choices=SECTION_CHOICES)
+    listing_id = models.PositiveIntegerField()
+    stars      = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [("user", "section", "listing_id")]
+        indexes         = [models.Index(fields=["section", "listing_id"])]
+        ordering        = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user} rated {self.section}/{self.listing_id} → {self.stars}★"
+
+
+class SiteFeedback(models.Model):
+    """Anonymous or authenticated site-wide feedback with optional star rating."""
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+                                   null=True, blank=True, related_name="site_feedbacks")
+    stars      = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    text       = models.TextField(blank=True)
+    page       = models.CharField(max_length=200, blank=True, help_text="Current page URL when feedback was submitted")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Feedback {self.stars}★ – {self.text[:40] or '(no text)'}"

@@ -40,7 +40,8 @@ class VehicleListCreateView(generics.ListCreateAPIView):
     pagination_class = BarmhaPagination
     filter_backends  = [DjangoFilterBackend, OrderingFilter]
     filterset_class  = VehicleFilter
-    ordering_fields  = ["price", "year", "mileage", "created_at", "updated_at", "views_count", "is_featured", "is_promoted"]
+    ordering_fields  = ["price", "year", "mileage", "created_at", "updated_at", "views_count", "avg_rating", "ratings_count", "is_featured", "is_promoted"]
+    ordering         = ["-is_featured", "-is_promoted", "-updated_at"]
 
     def get_queryset(self):
         qs = VehicleListing.objects.select_related("make", "model", "location__governorate", "showroom").prefetch_related("images")
@@ -71,7 +72,7 @@ class VehicleListCreateView(generics.ListCreateAPIView):
 
 
 class VehicleDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset           = VehicleListing.objects.select_related("make", "model", "location__governorate", "showroom").prefetch_related("images")
+    queryset           = VehicleListing.objects.filter(is_active=True).select_related("make", "model", "location__governorate", "showroom").prefetch_related("images")
     permission_classes = [IsOwnerOrAdminOrReadOnly]
 
     def get_serializer_class(self):

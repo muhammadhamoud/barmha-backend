@@ -183,6 +183,7 @@ class VehicleListSerializer(serializers.ModelSerializer):
             "price", "currency", "negotiable", "hide_price",
             "mileage", "fuel_type", "gear_type", "condition",
             "engine_size", "cylinders", "wheel_drive", "views_count",
+            "avg_rating", "ratings_count",
             "is_active", "is_featured", "is_promoted", "is_sold",
             "location",
             "primary_image", "images", "area_name",

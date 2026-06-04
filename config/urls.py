@@ -14,6 +14,7 @@ from apps.properties.sitemaps import PropertySitemap
 from apps.vehicles.sitemaps import VehicleSitemap
 from apps.classifieds.sitemaps import ClassifiedSitemap
 from apps.jobs.sitemaps import JobSitemap
+from apps.services.sitemaps import ServiceSitemap
 from apps.news.sitemaps import NewsSitemap
 from apps.news.feeds import LatestNewsFeed
 from apps.deals.feeds import LatestDealsFeed
@@ -85,6 +86,7 @@ SITEMAPS = {
     "vehicles":   VehicleSitemap,
     "classifieds":ClassifiedSitemap,
     "jobs":       JobSitemap,
+    "services":   ServiceSitemap,
     "news":       NewsSitemap,
 }
 
@@ -127,8 +129,7 @@ urlpatterns = [
     # /static/, /media/, /sitemap*, /feeds/).
     # WhiteNoise serves hashed JS/CSS/media chunks before Django URL routing
     # even runs, so those assets are never caught here.
-    re_path(r"^(?!api/|admin/|static/|media/|sitemap|feeds/)(?P<path>.*)$",
-            serve_angular_spa, name="spa"),
+    re_path(r"^(?!api/|admin/|static/|media/|sitemap|feeds/)(?P<path>.*)$", serve_angular_spa, name="spa"),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

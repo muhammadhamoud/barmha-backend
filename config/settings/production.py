@@ -102,4 +102,8 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.accounts.tasks.notify_saved_search_users",
         "schedule": crontab(hour=8, minute=0),
     },
+    "ping-search-engines-daily": {
+        "task": "apps.core.tasks.ping_search_engines",
+        "schedule": crontab(hour=6, minute=0),
+    },
 }

@@ -5,5 +5,5 @@ class CoreConfig(AppConfig):
     name = "apps.core"
 
     def ready(self):
-        # Register imagekit generators so ImageSpecField specs resolve correctly
-        import apps.core.images  # noqa: F401
+        import apps.core.images    # noqa: F401
+        import apps.core.signals   # noqa: F401

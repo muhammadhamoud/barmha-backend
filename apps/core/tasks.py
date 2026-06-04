@@ -46,6 +46,24 @@ def expire_old_listings():
 
 
 @shared_task
+def ping_search_engines():
+    """Notify Google and Bing that sitemap.xml has been updated."""
+    from django.conf import settings as _settings
+    site = getattr(_settings, "SITE_URL", "https://barmha.com").rstrip("/")
+    sitemap_url = f"{site}/sitemap.xml"
+    endpoints = [
+        f"https://www.google.com/ping?sitemap={sitemap_url}",
+        f"https://www.bing.com/ping?sitemap={sitemap_url}",
+    ]
+    for url in endpoints:
+        try:
+            requests.get(url, timeout=10)
+        except Exception as e:
+            logger.warning(f"sitemap ping failed for {url}: {e}")
+    logger.info("Sitemap pings sent to Google and Bing")
+
+
+@shared_task
 def send_push_notification(user_id, title_en, title_ar, body_en, body_ar, action_url=""):
     from apps.core.models import FCMDevice, Notification
     from apps.accounts.models import User

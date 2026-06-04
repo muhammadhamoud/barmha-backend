@@ -26,7 +26,8 @@ class ServiceListCreateView(generics.ListCreateAPIView):
     pagination_class = BarmhaPagination
     filter_backends  = [DjangoFilterBackend, OrderingFilter]
     filterset_class  = ServiceFilter
-    ordering_fields  = ["price", "created_at", "updated_at", "is_featured", "is_promoted"]
+    ordering_fields  = ["price", "created_at", "updated_at", "is_featured", "is_promoted", "avg_rating", "ratings_count"]
+    ordering         = ["-is_featured", "-is_promoted", "-updated_at"]
 
     def get_queryset(self):
         qs = ServiceListing.objects.select_related("provider__user", "category", "location__governorate")
@@ -52,7 +53,7 @@ class ServiceListCreateView(generics.ListCreateAPIView):
 
 
 class ServiceDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset           = ServiceListing.objects.select_related("provider__user", "category", "location__governorate")
+    queryset           = ServiceListing.objects.filter(is_active=True).select_related("provider__user", "category", "location__governorate")
     permission_classes = [IsProviderOrAdminOrReadOnly]
 
     def get_serializer_class(self):

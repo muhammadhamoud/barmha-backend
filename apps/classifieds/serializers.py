@@ -92,7 +92,7 @@ class ClassifiedListSerializer(TranslatableModelSerializer):
             "id", "translations", "listing_type", "condition",
             "price", "currency", "negotiable", "hide_price",
             "is_active", "is_featured", "is_promoted", "is_preloved",
-            "views_count", "location",
+            "views_count", "avg_rating", "ratings_count", "location",
             "primary_image", "images", "location_name",
             "governorate_name", "governorate_id",
             "seller_name", "seller_phone", "seller_whatsapp", "created_at",

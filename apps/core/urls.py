@@ -26,5 +26,14 @@ urlpatterns = [
     path("section-counts/",             views.section_counts),
     path("top-sellers/",                views.top_sellers),
     path("home/",                       views.home_page),
-   
+    path("batch-views/",               views.batch_views),
+    path("deactivate-listing/",        views.deactivate_listing),
+    path("listing-ratings/",          views.ListingRatingView.as_view()),
+    path("listing-ratings/my/",       views.my_listing_rating),
+    path("listing-ratings/delete/",   views.delete_listing_rating),
+    path("listing-ratings/all/",      views.AdminListingRatingListView.as_view()),
+    path("listing-ratings/<int:pk>/", views.admin_delete_listing_rating),
+    path("feedback/",                 views.SiteFeedbackView.as_view()),
+    path("feedback/list/",            views.AdminSiteFeedbackListView.as_view()),
+    path("feedback/<int:pk>/",        views.admin_delete_feedback),
 ]

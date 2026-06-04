@@ -1,10 +1,11 @@
-﻿from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from apps.core.pagination import BarmhaPagination
 from .models import Report, BlockedIP, BlockedUser, UserBlock
-from .serializers import ReportSerializer, BlockedIPSerializer, BlockedUserSerializer
+from .serializers import ReportSerializer, AdminReportSerializer, BlockedIPSerializer, BlockedUserSerializer
 
 
 def _get_client_ip(request):
@@ -13,7 +14,6 @@ def _get_client_ip(request):
 
 
 class ReportListCreateView(generics.ListCreateAPIView):
-    serializer_class = ReportSerializer
     pagination_class = BarmhaPagination
 
     def get_permissions(self):
@@ -21,8 +21,20 @@ class ReportListCreateView(generics.ListCreateAPIView):
             return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
 
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return AdminReportSerializer
+        return ReportSerializer
+
     def get_queryset(self):
-        return Report.objects.all()
+        qs = Report.objects.select_related("reporter", "reviewed_by").all()
+        status_filter = self.request.query_params.get("status")
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        section_filter = self.request.query_params.get("section")
+        if section_filter:
+            qs = qs.filter(content_type=section_filter)
+        return qs
 
     def perform_create(self, serializer):
         serializer.save(
@@ -32,9 +44,15 @@ class ReportListCreateView(generics.ListCreateAPIView):
 
 
 class ReportDetailView(generics.UpdateAPIView):
-    serializer_class   = ReportSerializer
+    serializer_class   = AdminReportSerializer
     permission_classes = [permissions.IsAdminUser]
-    queryset           = Report.objects.all()
+    queryset           = Report.objects.select_related("reporter", "reviewed_by").all()
+
+    def perform_update(self, serializer):
+        serializer.save(
+            reviewed_by=self.request.user,
+            reviewed_at=timezone.now(),
+        )
 
 
 @api_view(["POST"])

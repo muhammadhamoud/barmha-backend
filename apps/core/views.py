@@ -8,11 +8,11 @@ from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from .models import Governorate, Location, PrayerTime, SiteSettings, ContactMessage, Notification, FCMDevice, ListingShare, DrawnAreaAlert
+from .models import Governorate, Location, PrayerTime, SiteSettings, ContactMessage, Notification, FCMDevice, ListingShare, DrawnAreaAlert, ListingRating, SiteFeedback
 from .serializers import (
     GovernorateSerializer, LocationSerializer, PrayerTimeSerializer,
     SiteSettingsSerializer, ContactMessageSerializer, NotificationSerializer, FCMDeviceSerializer,
-    ListingShareSerializer, DrawnAreaAlertSerializer,
+    ListingShareSerializer, DrawnAreaAlertSerializer, ListingRatingSerializer, SiteFeedbackSerializer,
 )
 from .choices import CHOICES_REGISTRY
 from .throttles import ContactThrottle
@@ -1331,6 +1331,244 @@ def home_page(request):
         "services":    services,
         "top_sellers": top_sellers,
     })
+
+
+_BATCH_VIEW_MODEL_MAP = {
+    "properties":  ("apps.properties",  "PropertyListing"),
+    "vehicles":    ("apps.vehicles",    "VehicleListing"),
+    "classifieds": ("apps.classifieds", "ClassifiedListing"),
+    "jobs":        ("apps.jobs",        "JobListing"),
+    "services":    ("apps.services",    "ServiceListing"),
+}
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def batch_views(request):
+    """Bulk-increment views_count for multiple listings — called by the frontend on card visibility."""
+    from django.apps import apps as django_apps
+    items = request.data if isinstance(request.data, list) else []
+    for item in items:
+        section    = item.get("section", "")
+        listing_id = item.get("id")
+        count      = max(1, int(item.get("count", 1)))
+        entry      = _BATCH_VIEW_MODEL_MAP.get(section)
+        if not entry or not listing_id:
+            continue
+        try:
+            Model = django_apps.get_model(*entry)
+            Model.objects.filter(pk=listing_id).update(views_count=models.F("views_count") + count)
+        except Exception:
+            pass
+    return Response({"ok": True})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Listing Ratings
+# ─────────────────────────────────────────────────────────────────────────────
+
+class ListingRatingView(generics.CreateAPIView):
+    """
+    POST /core/listing-ratings/
+    Body: { section, listing_id, stars }
+    Creates or updates (upserts) the current user's rating for a listing.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class   = ListingRatingSerializer
+
+    def create(self, request, *args, **kwargs):
+        section    = request.data.get("section", "")
+        listing_id = request.data.get("listing_id")
+        existing   = ListingRating.objects.filter(
+            user=request.user, section=section, listing_id=listing_id
+        ).first()
+        if existing:
+            serializer = self.get_serializer(existing, data=request.data, partial=False)
+            serializer.is_valid(raise_exception=True)
+            existing.stars = serializer.validated_data["stars"]
+            existing.save(update_fields=["stars", "updated_at"])
+            data = self.get_serializer(existing).data
+        else:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(user=request.user)
+            data = serializer.data
+
+        # Append the updated denormalized avg/count from the listing model
+        from apps.core.signals import _MODEL_MAP
+        from django.apps import apps
+        entry = _MODEL_MAP.get(section)
+        if entry:
+            try:
+                Model = apps.get_model(*entry)
+                listing = Model.objects.filter(pk=listing_id).values("avg_rating", "ratings_count").first()
+                if listing:
+                    data = dict(data)
+                    data["avg_rating"]    = listing["avg_rating"]
+                    data["ratings_count"] = listing["ratings_count"]
+            except Exception:
+                pass
+
+        http_status = status.HTTP_200_OK if existing else status.HTTP_201_CREATED
+        return Response(data, status=http_status)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def my_listing_rating(request):
+    """
+    GET /core/listing-ratings/my/?section=properties&listing_id=42
+    Returns the current user's rating for one listing, or 404.
+    """
+    section    = request.query_params.get("section", "")
+    listing_id = request.query_params.get("listing_id")
+    try:
+        rating = ListingRating.objects.get(user=request.user, section=section, listing_id=listing_id)
+        return Response(ListingRatingSerializer(rating).data)
+    except ListingRating.DoesNotExist:
+        return Response({"detail": "not_found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_listing_rating(request):
+    """
+    DELETE /core/listing-ratings/my/?section=properties&listing_id=42
+    Removes the current user's rating for one listing.
+    """
+    section    = request.query_params.get("section", "")
+    listing_id = request.query_params.get("listing_id")
+    deleted, _ = ListingRating.objects.filter(
+        user=request.user, section=section, listing_id=listing_id
+    ).delete()
+    if deleted:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response({"detail": "not_found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Site Feedback
+# ─────────────────────────────────────────────────────────────────────────────
+
+class SiteFeedbackView(generics.CreateAPIView):
+    """
+    POST /core/feedback/
+    Body: { stars?, text?, page? }
+    Accepts anonymous (AllowAny) or authenticated feedback.
+    """
+    permission_classes = [AllowAny]
+    serializer_class   = SiteFeedbackSerializer
+
+    def perform_create(self, serializer):
+        user = self.request.user if self.request.user.is_authenticated else None
+        serializer.save(user=user)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Admin — Listing Ratings & Feedback
+# ─────────────────────────────────────────────────────────────────────────────
+
+class AdminListingRatingListView(generics.ListAPIView):
+    """
+    GET /core/listing-ratings/all/   (admin-only paginated list of all ratings)
+    Supports: ?section=, ?stars=, ?ordering=, ?page=, ?page_size=
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class   = ListingRatingSerializer
+
+    def get_queryset(self):
+        if not self.request.user.is_staff:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied()
+        qs = ListingRating.objects.select_related("user").order_by("-created_at")
+        section = self.request.query_params.get("section")
+        stars   = self.request.query_params.get("stars")
+        if section:
+            qs = qs.filter(section=section)
+        if stars:
+            try:
+                qs = qs.filter(stars=int(stars))
+            except (ValueError, TypeError):
+                pass
+        ordering = self.request.query_params.get("ordering", "-created_at")
+        allowed_orderings = ("created_at", "-created_at", "stars", "-stars")
+        if ordering in allowed_orderings:
+            qs = qs.order_by(ordering)
+        return qs
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def admin_delete_listing_rating(request, pk):
+    """DELETE /core/listing-ratings/<pk>/  (admin-only)"""
+    if not request.user.is_staff:
+        return Response({"detail": "Forbidden."}, status=status.HTTP_403_FORBIDDEN)
+    deleted, _ = ListingRating.objects.filter(pk=pk).delete()
+    if deleted:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response({"detail": "not_found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class AdminSiteFeedbackListView(generics.ListAPIView):
+    """
+    GET /core/feedback/  (admin-only when authenticated as staff, else 403)
+    Supports: ?stars=, ?has_text=1, ?ordering=, ?page=, ?page_size=
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class   = SiteFeedbackSerializer
+
+    def get_queryset(self):
+        if not self.request.user.is_staff:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied()
+        qs = SiteFeedback.objects.order_by("-created_at")
+        stars    = self.request.query_params.get("stars")
+        has_text = self.request.query_params.get("has_text")
+        if stars:
+            try:
+                qs = qs.filter(stars=int(stars))
+            except (ValueError, TypeError):
+                pass
+        if has_text:
+            qs = qs.exclude(text="")
+        ordering = self.request.query_params.get("ordering", "-created_at")
+        allowed_orderings = ("created_at", "-created_at", "stars", "-stars")
+        if ordering in allowed_orderings:
+            qs = qs.order_by(ordering)
+        return qs
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def admin_delete_feedback(request, pk):
+    """DELETE /core/feedback/<pk>/  (admin-only)"""
+    if not request.user.is_staff:
+        return Response({"detail": "Forbidden."}, status=status.HTTP_403_FORBIDDEN)
+    deleted, _ = SiteFeedback.objects.filter(pk=pk).delete()
+    if deleted:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response({"detail": "not_found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def deactivate_listing(request):
+    """Admin-only: set is_active=False on any listing by section + object_id."""
+    if not request.user.is_staff:
+        return Response({"detail": "Forbidden."}, status=status.HTTP_403_FORBIDDEN)
+    from django.apps import apps as django_apps
+    section    = request.data.get("section", "")
+    object_id  = request.data.get("object_id")
+    entry      = _BATCH_VIEW_MODEL_MAP.get(section)
+    if not entry or not object_id:
+        return Response({"detail": "Invalid section or object_id."}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        Model   = django_apps.get_model(*entry)
+        updated = Model.objects.filter(pk=object_id).update(is_active=False)
+        if not updated:
+            return Response({"detail": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"ok": True})
+    except Exception as exc:
+        return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 

@@ -99,7 +99,7 @@ class JobListSerializer(TranslatableModelSerializer):
             "company_name", "company_logo", "area_name",
             "governorate_name", "governorate_id",
             "ai_summary", "seller_phone", "seller_whatsapp",
-            "views_count", "applications_count", "expires_at", "created_at",
+            "views_count", "avg_rating", "ratings_count", "applications_count", "expires_at", "created_at",
         ]
 
     def get_company_name(self, obj):

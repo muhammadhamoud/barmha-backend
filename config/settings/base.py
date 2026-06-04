@@ -422,6 +422,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_DOMAIN = 'barmha.com'
+SITE_DOMAIN  = env("SITE_DOMAIN", default="barmha.com")
 EMAIL_HOST=f'mail.{EMAIL_DOMAIN}'
 EMAIL_PORT=465
 EMAIL_USE_SSL=True

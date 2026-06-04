@@ -1,11 +1,10 @@
-from django.contrib.sitemaps import Sitemap
+from apps.core.sitemaps import BarmhaSitemap, _make_slug
 from .models import PropertyListing
 
 
-class PropertySitemap(Sitemap):
+class PropertySitemap(BarmhaSitemap):
     changefreq = "daily"
     priority   = 0.8
-    protocol   = "https"
 
     def items(self):
         return PropertyListing.objects.filter(is_active=True).order_by("-updated_at")
@@ -14,4 +13,4 @@ class PropertySitemap(Sitemap):
         return obj.updated_at
 
     def location(self, obj):
-        return f"/en/properties/{obj.pk}/"
+        return f"/properties/{_make_slug(obj.pk, obj.title)}/"

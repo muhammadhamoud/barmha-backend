@@ -35,7 +35,8 @@ class ClassifiedListCreateView(generics.ListCreateAPIView):
     pagination_class = BarmhaPagination
     filter_backends  = [DjangoFilterBackend, OrderingFilter]
     filterset_class  = ClassifiedFilter
-    ordering_fields  = ["price", "created_at", "updated_at", "views_count", "is_featured", "is_promoted"]
+    ordering_fields  = ["price", "created_at", "updated_at", "views_count", "avg_rating", "ratings_count", "is_featured", "is_promoted"]
+    ordering         = ["-is_featured", "-is_promoted", "-updated_at"]
 
     def get_queryset(self):
         qs = ClassifiedListing.objects.select_related("seller", "store", "category", "location__governorate").prefetch_related("images")
@@ -75,7 +76,7 @@ def upload_classified_image(request, pk):
 
 
 class ClassifiedDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset           = ClassifiedListing.objects.select_related("seller", "store", "category", "location__governorate").prefetch_related("images")
+    queryset           = ClassifiedListing.objects.filter(is_active=True).select_related("seller", "store", "category", "location__governorate").prefetch_related("images")
     permission_classes = [IsSellerOrAdminOrReadOnly]
 
     def get_serializer_class(self):

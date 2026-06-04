@@ -608,15 +608,18 @@ class UserPublicListingsView(APIView):
         from apps.classifieds.serializers import ClassifiedListSerializer
         from apps.jobs.models import JobListing
         from apps.jobs.serializers import JobListSerializer
+        from apps.services.models import ServiceListing
+        from apps.services.serializers import ServiceListingSerializer
 
         user = get_object_or_404(User, pk=pk)
         ctx  = {"request": request}
 
         sections = [
-            ("properties",  PropertyListing.objects.filter(posted_by=user, is_active=True).order_by("-created_at"),  PropertyListSerializer),
-            ("vehicles",    VehicleListing.objects.filter(posted_by=user, is_active=True).order_by("-created_at"),   VehicleListSerializer),
-            ("classifieds", ClassifiedListing.objects.filter(posted_by=user, is_active=True).order_by("-created_at"), ClassifiedListSerializer),
+            ("properties",  PropertyListing.objects.filter(posted_by=user, is_active=True).order_by("-created_at"),   PropertyListSerializer),
+            ("vehicles",    VehicleListing.objects.filter(posted_by=user, is_active=True).order_by("-created_at"),    VehicleListSerializer),
+            ("classifieds", ClassifiedListing.objects.filter(seller=user, is_active=True).order_by("-created_at"),    ClassifiedListSerializer),
             ("jobs",        JobListing.objects.filter(posted_by=user, is_active=True).order_by("-created_at"),        JobListSerializer),
+            ("services",    ServiceListing.objects.filter(provider__user=user, is_active=True).order_by("-created_at"), ServiceListingSerializer),
         ]
 
         listings = []

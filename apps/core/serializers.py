@@ -4,6 +4,7 @@ from parler_rest.fields import TranslatedFieldsField
 from .models import (
     Governorate, Location, PrayerTime,
     SiteSettings, ContactMessage, Notification, FCMDevice, ListingShare, DrawnAreaAlert,
+    ListingRating, SiteFeedback,
 )
 
 
@@ -130,3 +131,33 @@ class DrawnAreaAlertSerializer(serializers.ModelSerializer):
         model  = DrawnAreaAlert
         fields = ["id", "name", "polygon_wkt", "section", "is_active", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class ListingRatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = ListingRating
+        fields = ["id", "section", "listing_id", "stars", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+    def validate_stars(self, value):
+        if not (1 <= value <= 5):
+            raise serializers.ValidationError("Stars must be between 1 and 5.")
+        return value
+
+    def validate(self, data):
+        section    = data.get("section") or getattr(self.instance, "section", None)
+        listing_id = data.get("listing_id") or getattr(self.instance, "listing_id", None)
+        user       = self.context["request"].user
+        qs = ListingRating.objects.filter(user=user, section=section, listing_id=listing_id)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("You have already rated this listing.")
+        return data
+
+
+class SiteFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = SiteFeedback
+        fields = ["id", "stars", "text", "page", "created_at"]
+        read_only_fields = ["id", "created_at"]

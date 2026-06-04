@@ -188,6 +188,7 @@ class PropertyListSerializer(serializers.ModelSerializer):
             "price", "currency", "price_period", "negotiable", "hide_price",
             "bedrooms", "bathrooms", "area_sqm", "furnishing",
             "floor_number", "total_floors", "views_count",
+            "avg_rating", "ratings_count",
             "is_active", "is_featured", "is_promoted", "is_sold_rented",
             "location", "latitude", "longitude",
             "primary_image", "images", "area_name", "city_name",

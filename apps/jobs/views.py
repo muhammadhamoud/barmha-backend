@@ -37,7 +37,8 @@ class JobListCreateView(generics.ListCreateAPIView):
     pagination_class = BarmhaPagination
     filter_backends  = [DjangoFilterBackend, OrderingFilter]
     filterset_class  = JobFilter
-    ordering_fields  = ["created_at", "updated_at", "views_count", "is_featured", "is_promoted"]
+    ordering_fields  = ["created_at", "updated_at", "views_count", "avg_rating", "ratings_count", "is_featured", "is_promoted"]
+    ordering         = ["-is_featured", "-is_promoted", "-updated_at"]
 
     def get_queryset(self):
         qs = JobListing.objects.select_related("company", "posted_by", "category", "location__governorate")

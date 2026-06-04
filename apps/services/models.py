@@ -68,6 +68,8 @@ class ServiceListing(TranslatableModel):
     is_featured  = models.BooleanField(default=False)
     is_promoted  = models.BooleanField(default=False)
     views_count  = models.PositiveIntegerField(default=0)
+    avg_rating   = models.DecimalField(max_digits=3, decimal_places=2, default=0)
+    ratings_count = models.PositiveIntegerField(default=0)
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
 

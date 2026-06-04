@@ -83,7 +83,7 @@ class ServiceListingSerializer(TranslatableModelSerializer):
             "price", "min_price", "max_price", "currency", "price_type",
             "location", "area_name", "governorate_name", "governorate_id",
             "seller_phone", "seller_whatsapp",
-            "is_active", "is_featured", "is_promoted", "views_count", "created_at",
+            "is_active", "is_featured", "is_promoted", "views_count", "avg_rating", "ratings_count", "created_at",
         ]
 
     def get_provider_name(self, obj):

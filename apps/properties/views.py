@@ -31,7 +31,8 @@ class PropertyListCreateView(generics.ListCreateAPIView):
     pagination_class = BarmhaPagination
     filter_backends  = [DjangoFilterBackend, OrderingFilter]
     filterset_class  = PropertyFilter
-    ordering_fields  = ["price", "created_at", "updated_at", "area_sqm", "views_count", "is_featured", "is_promoted"]
+    ordering_fields  = ["price", "created_at", "updated_at", "area_sqm", "views_count", "avg_rating", "ratings_count", "is_featured", "is_promoted"]
+    ordering         = ["-is_featured", "-is_promoted", "-updated_at"]
 
     def get_queryset(self):
         qs = PropertyListing.objects.select_related("location__governorate", "agency", "agent").prefetch_related("images")
@@ -64,7 +65,7 @@ class PropertyListCreateView(generics.ListCreateAPIView):
 
 
 class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset           = PropertyListing.objects.select_related("location__governorate", "agency", "agent").prefetch_related("images", "nearby")
+    queryset           = PropertyListing.objects.filter(is_active=True).select_related("location__governorate", "agency", "agent").prefetch_related("images", "nearby")
     permission_classes = [IsOwnerOrAdminOrReadOnly]
 
     def get_serializer_class(self):

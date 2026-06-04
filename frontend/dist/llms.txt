@@ -1,0 +1,35 @@
+# برمها — Barmha
+
+> أكبر موقع إعلانات مبوبة في سوريا | Syria's largest classified ads platform
+
+Barmha (barmha.com) is a bilingual (Arabic/English) online marketplace serving Syria. Users can post and browse listings across real estate, vehicles, jobs, services, and general classifieds. The platform supports buyer–seller contact via WhatsApp and in-app messaging, map-based search, saved searches, area alerts, and reviews.
+
+## Sections
+
+- [Properties](/properties) — residential and commercial real estate for sale or rent (apartments, villas, land, offices, shops)
+- [Vehicles](/vehicles) — cars, trucks, motorcycles, and spare parts for sale
+- [Classifieds](/classifieds) — general second-hand and new items
+- [Jobs](/jobs) — employment listings across all industries
+- [Services](/services) — freelance and professional services
+- [Deals](/deals) — merchant offers and discounts
+- [Events](/events) — local events and activities
+- [News](/news) — local news articles
+
+## Features
+
+- Bilingual UI: Arabic (RTL) and English (LTR)
+- Map search with geographic bounding box and polygon drawing
+- Area alerts: notify users when new listings appear in a drawn zone
+- Saved searches with email/push notifications
+- In-app messaging between buyers and sellers
+- Listing ratings and seller reviews
+- Google Sign-In and Facebook Login
+- PWA — installable on iOS and Android
+
+## Contact & Legal
+
+- Website: https://barmha.com
+- Contact: https://barmha.com/contact
+- Privacy Policy: https://barmha.com/legal/privacy
+- Terms of Service: https://barmha.com/legal/terms
+- Sitemap: https://barmha.com/sitemap.xml

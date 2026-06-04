@@ -19,6 +19,9 @@
     "SAVED_SEARCHES": "البحوث المحفوظة",
     "POST": "أضف",
     "ADMIN_ADS": "إدارة الإعلانات",
+    "ADMIN_REPORTS": "البلاغات",
+    "ADMIN_RATINGS": "التقييمات",
+    "ADMIN_FEEDBACK": "آراء الموقع",
     "AREA_ALERTS": "تنبيهات المنطقة",
     "TERMS": "الشروط والأحكام",
     "PRIVACY": "سياسة الخصوصية",
@@ -276,6 +279,11 @@
     "SHARE_SYSTEM": "مشاركة عبر النظام",
     "COPY_LINK": "نسخ الرابط",
     "WA_INTRO": "مرحباً، أنا مهتم بهذا الإعلان",
+    "RATING": {
+      "NO_RATINGS": "لا توجد تقييمات بعد",
+      "RATE_THIS": "قيّم هذا الإعلان:",
+      "YOUR_RATING": "تقييمك: {{n}} ★"
+    },
     "FLAGS": {
       "NEGOTIABLE":    "قابل للتفاوض",
       "NO_COMMISSION": "بدون عمولة",
@@ -378,6 +386,64 @@
     "LOAD_MORE": "تحميل المزيد"
   },
   "ADMIN": {
+    "REPORTS": {
+      "TITLE": "البلاغات والمخالفات",
+      "ALL_STATUSES": "كل الحالات",
+      "ALL_SECTIONS": "كل الأقسام",
+      "STATUS_PENDING": "قيد المراجعة",
+      "STATUS_REVIEWED": "تمت المراجعة",
+      "STATUS_ACTION_TAKEN": "تم اتخاذ إجراء",
+      "STATUS_DISMISSED": "مرفوض",
+      "LOAD_ERROR": "تعذّر تحميل البلاغات",
+      "EMPTY": "لا توجد بلاغات",
+      "COL_ID": "رقم",
+      "COL_REPORTER": "المُبلِّغ",
+      "COL_LISTING": "الإعلان",
+      "COL_REASON": "السبب",
+      "COL_DETAILS": "التفاصيل",
+      "COL_IP": "عنوان IP",
+      "COL_STATUS": "الحالة",
+      "COL_DATE": "التاريخ",
+      "COL_ACTIONS": "الإجراءات",
+      "ANONYMOUS": "مجهول",
+      "REASON_SPAM": "سبام",
+      "REASON_FAKE": "مضلل / مزيف",
+      "REASON_INAPPROPRIATE": "محتوى مسيء",
+      "REASON_SCAM": "احتيال",
+      "REASON_WRONG_CATEGORY": "فئة خاطئة",
+      "REASON_OTHER": "أخرى",
+      "DISMISS": "تجاهل",
+      "REMOVE_LISTING": "حذف الإعلان",
+      "BLOCK_USER": "حظر المستخدم",
+      "BLOCK_USER_IP": "حظر المستخدم + IP",
+      "ACTION_FAILED": "فشل الإجراء",
+      "DISMISSED": "تم التجاهل",
+      "LISTING_REMOVED": "تم حذف الإعلان",
+      "USER_BLOCKED": "تم حظر المستخدم",
+      "USER_IP_BLOCKED": "تم حظر المستخدم والـ IP",
+      "RESOLVED": "تمت المعالجة",
+      "PAGE_INFO": "عرض {{shown}} من {{total}}"
+    },
+    "RATINGS": {
+      "TOTAL": "تقييم",
+      "EMPTY": "لا توجد تقييمات.",
+      "ALL_STARS": "كل النجوم",
+      "USER": "المستخدم",
+      "SECTION": "القسم",
+      "LISTING": "الإعلان",
+      "STARS": "النجوم",
+      "DATE": "التاريخ",
+      "ACTIONS": "إجراءات"
+    },
+    "FEEDBACK": {
+      "TOTAL": "رأي",
+      "EMPTY": "لا توجد آراء.",
+      "AVG_STARS": "متوسط التقييم",
+      "RATED": "مُقيَّم",
+      "WITH_TEXT": "مع نص",
+      "NO_STARS": "بدون تقييم",
+      "ANON": "مجهول"
+    },
     "ADS": {
       "TITLE": "إدارة الإعلانات",
       "TAB_BANNERS": "البانرات",
@@ -466,6 +532,9 @@
     "RESET_PASSWORD": "إعادة تعيين كلمة المرور",
     "NOT_FOUND": "404 — الصفحة غير موجودة",
     "ADMIN_ADS": "إدارة الإعلانات",
+    "ADMIN_REPORTS": "البلاغات",
+    "ADMIN_RATINGS": "تقييمات الإعلانات",
+    "ADMIN_FEEDBACK": "آراء الموقع",
     "SEARCH": "نتائج البحث",
     "LEGAL_TERMS": "الشروط والأحكام",
     "LEGAL_PRIVACY": "سياسة الخصوصية",
@@ -485,6 +554,24 @@
     "SECTION_JOBS": "وظيفة",
     "SECTION_SERVICES": "خدمة"
   },
+  "COOKIE": {
+    "TITLE": "نستخدم ملفات تعريف الارتباط",
+    "BODY": "اختر ملفات تعريف الارتباط التي تسمح بها. الملفات الضرورية مفعّلة دائماً. الملفات التحليلية تساعدنا على تحسين الموقع. ملفات الإعلانات تخصّص الإعلانات لك.",
+    "ESSENTIAL": "الضرورية (مطلوبة)",
+    "ANALYTICS": "تحليلية",
+    "ADVERTISING": "إعلانية",
+    "ESSENTIAL_ONLY": "الضرورية فقط",
+    "ACCEPT_SELECTED": "قبول المحدد",
+    "ACCEPT_ALL": "قبول الكل"
+  },
+  "FEEDBACK_WIDGET": {
+    "TITLE": "كيف تجد تجربتك في برمها؟",
+    "PLACEHOLDER": "أخبرنا المزيد... (اختياري)",
+    "SUBMIT": "إرسال الرأي",
+    "SKIP": "ربما لاحقاً",
+    "THANKS": "شكراً على رأيك!",
+    "ARIA": "تقييم الموقع"
+  },
   "SETTINGS": {
     "TITLE": "الإعدادات",
     "APPEARANCE": "المظهر",
@@ -498,7 +585,8 @@
     "HELP": "مركز المساعدة",
     "CONTACT": "تواصل معنا",
     "PRIVACY": "سياسة الخصوصية",
-    "TERMS": "الشروط والأحكام"
+    "TERMS": "الشروط والأحكام",
+    "ADMIN": "أدوات الإدارة"
   },
   "SELLER": {
     "LISTINGS": "إعلان",
@@ -548,7 +636,8 @@
     "OLDEST": "الأقدم",
     "PRICE_LOW": "السعر: الأقل",
     "PRICE_HIGH": "السعر: الأعلى",
-    "MOST_VIEWED": "الأكثر مشاهدة"
+    "MOST_VIEWED": "الأكثر مشاهدة",
+    "TOP_RATED": "الأعلى تقييماً"
   },
   "MAP": {
     "SEARCH_AREA": "البحث في هذه المنطقة",
@@ -878,7 +967,8 @@
     "NEWEST": "الأحدث",
     "PRICE_LOW": "السعر: من الأقل",
     "PRICE_HIGH": "السعر: من الأعلى",
-    "MOST_VIEWED": "الأكثر مشاهدة"
+    "MOST_VIEWED": "الأكثر مشاهدة",
+    "TOP_RATED": "الأعلى تقييماً"
   }
 },
 "UI": {
@@ -1042,8 +1132,10 @@
   "LISTING_CARD": {
     "VIEW_LISTING": "عرض الإعلان",
     "PREV_IMAGE": "الصورة السابقة",
-    "NEXT_IMAGE": "الصورة التالية"
+    "NEXT_IMAGE": "الصورة التالية",
+    "READ_MORE": "اقرأ المزيد"
   },
+  "MORE": "المزيد",
   "IMAGE_GALLERY": {
     "IMAGE_ALT": "صورة",
     "PREVIOUS": "الصورة السابقة",
@@ -1062,6 +1154,7 @@
     "FILTER_COUNT": "{{count}} فلتر",
     "DELETE_CONFIRM": "هل تريد حذف هذا البحث المحفوظ؟",
     "SAVED_TOAST": "تم حفظ البحث!",
+    "SAVE_ERROR": "فشل حفظ البحث. يرجى المحاولة مرة أخرى.",
     "ALREADY_SAVED": "محفوظ بالفعل",
     "SAVE_SEARCH": "حفظ البحث",
     "SAVE_SEARCH_NAME": "اسم البحث (اختياري)",
