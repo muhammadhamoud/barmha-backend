@@ -167,7 +167,7 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "200/day",
+        "anon": "1000/minute",
         "user": "2000/day",
         "listing_create": "10/hour",
         "otp_request": "3/hour",
