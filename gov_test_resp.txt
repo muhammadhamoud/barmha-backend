@@ -1,0 +1,2 @@
+status=200
+[{"id":125,"slug":"damascus","translations":{"en":{"name":"Damascus"},"ar":{"name":"دمشق"}},"is_active":true,"order":1}]

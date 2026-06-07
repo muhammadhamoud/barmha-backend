@@ -5,7 +5,7 @@ from django.core.cache import cache
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import generics, status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from .models import Governorate, Location, PrayerTime, SiteSettings, ContactMessage, Notification, FCMDevice, ListingShare, DrawnAreaAlert, ListingRating, SiteFeedback
@@ -15,11 +15,12 @@ from .serializers import (
     ListingShareSerializer, DrawnAreaAlertSerializer, ListingRatingSerializer, SiteFeedbackSerializer,
 )
 from .choices import CHOICES_REGISTRY
-from .throttles import ContactThrottle
+from .throttles import ContactThrottle, ReferenceDataThrottle
 
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
+@throttle_classes([ReferenceDataThrottle])
 def choices_view(request):
     cached = cache.get("choices_registry")
     if cached:
@@ -31,6 +32,7 @@ def choices_view(request):
 @method_decorator(cache_page(86400), name="list")
 class GovernorateListView(generics.ListAPIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ReferenceDataThrottle]
     serializer_class = GovernorateSerializer
     queryset = Governorate.objects.filter(is_active=True)
     pagination_class = None
@@ -39,6 +41,7 @@ class GovernorateListView(generics.ListAPIView):
 
 class LocationListView(generics.ListAPIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ReferenceDataThrottle]
     serializer_class   = LocationSerializer
     pagination_class   = None           # return full list — reference data used by dropdowns
 

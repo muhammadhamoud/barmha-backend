@@ -23,3 +23,8 @@ class ContactThrottle(AnonRateThrottle):
 
 class TokenRefreshThrottle(AnonRateThrottle):
     scope = "token_refresh"
+
+
+class ReferenceDataThrottle(AnonRateThrottle):
+    """For static, server-cached, public reference data (choices, governorates, locations)."""
+    scope = "reference_data"
