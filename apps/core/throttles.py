@@ -19,3 +19,7 @@ class RegisterThrottle(AnonRateThrottle):
 
 class ContactThrottle(AnonRateThrottle):
     scope = "contact"
+
+
+class TokenRefreshThrottle(AnonRateThrottle):
+    scope = "token_refresh"

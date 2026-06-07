@@ -65,7 +65,7 @@ class PropertyListCreateView(generics.ListCreateAPIView):
 
 
 class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset           = PropertyListing.objects.filter(is_active=True).select_related("location__governorate", "agency", "agent").prefetch_related("images", "nearby")
+    queryset           = PropertyListing.objects.select_related("location__governorate", "agency", "agent").prefetch_related("images", "nearby")
     permission_classes = [IsOwnerOrAdminOrReadOnly]
 
     def get_serializer_class(self):

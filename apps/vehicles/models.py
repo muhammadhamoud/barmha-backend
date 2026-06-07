@@ -110,8 +110,8 @@ class VehicleImage(models.Model):
     listing    = models.ForeignKey(VehicleListing, on_delete=models.CASCADE, related_name="images")
     image      = ProcessedImageField(
         upload_to="vehicles/images/",
-        processors=[Transpose(), ResizeToFit(1600, 1200)],
-        format="WEBP", options={"quality": 85},
+        processors=[Transpose(), ResizeToFit(1200, 900)],
+        format="WEBP", options={"quality": 78},
         validators=[validate_image_size, validate_image_type],
     )
     thumbnail  = ImageSpecField(source="image", spec="core:thumbnail")

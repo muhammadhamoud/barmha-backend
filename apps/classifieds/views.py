@@ -76,7 +76,7 @@ def upload_classified_image(request, pk):
 
 
 class ClassifiedDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset           = ClassifiedListing.objects.filter(is_active=True).select_related("seller", "store", "category", "location__governorate").prefetch_related("images")
+    queryset           = ClassifiedListing.objects.select_related("seller", "store", "category", "location__governorate").prefetch_related("images")
     permission_classes = [IsSellerOrAdminOrReadOnly]
 
     def get_serializer_class(self):

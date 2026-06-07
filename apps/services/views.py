@@ -53,7 +53,7 @@ class ServiceListCreateView(generics.ListCreateAPIView):
 
 
 class ServiceDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset           = ServiceListing.objects.filter(is_active=True).select_related("provider__user", "category", "location__governorate")
+    queryset           = ServiceListing.objects.select_related("provider__user", "category", "location__governorate")
     permission_classes = [IsProviderOrAdminOrReadOnly]
 
     def get_serializer_class(self):

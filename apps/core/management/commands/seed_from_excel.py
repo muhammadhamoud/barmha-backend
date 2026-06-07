@@ -5,10 +5,16 @@ Reads facebook/seed_data.xlsx (produced by facebook/extract_to_excel.py)
 and loads users + listings + images into the database.
 
 Usage:
+    python manage.py seed_from_excel --sheet users
+
     python manage.py seed_from_excel
     python manage.py seed_from_excel --excel ../facebook/seed_data.xlsx
     python manage.py seed_from_excel --sheet PropertyListing --skip-images
     python manage.py seed_from_excel --dry-run
+
+    python manage.py seed_from_excel --limit 50 --sheet PropertyListing
+    python manage.py seed_from_excel --limit 10 --skip-images --dry-run
+
 """
 
 import sys
@@ -129,41 +135,79 @@ BULK_SIZE = 200
 
 # ── Users ──────────────────────────────────────────────────────────────────────
 
+USER_BATCH_SIZE = 25
+
+
 def seed_users(rows: list[dict], dry_run: bool, stdout) -> dict[str, object]:
     """Create users from the users sheet. Returns phone → User mapping."""
+    from apps.accounts.models import User
+
     user_map: dict[str, object] = {}
     created = skipped = errors = 0
     total = len(rows)
     stdout.write(f"  {total} user rows to process ...")
 
+    if dry_run:
+        for idx, row in enumerate(rows, 1):
+            phone = _str(row.get('phone'))
+            if not phone:
+                continue
+            user = (
+                User.objects.filter(phone=phone).first()
+                or User.objects.filter(
+                    email=_str(row.get('email')) or f"{phone}@barmha.phone"
+                ).first()
+            )
+            user_map[phone] = user
+            if user:
+                skipped += 1
+            else:
+                created += 1
+            _progress(stdout, "users", idx, total)
+        stdout.write(f"  Users done: {created} created, {skipped} already exist, {errors} errors")
+        return user_map
+
+    # Collect rows into batches of USER_BATCH_SIZE, commit each batch atomically.
+    batch: list[dict] = []
+
+    def _flush(batch: list[dict]) -> tuple[int, int, int]:
+        b_created = b_skipped = b_errors = 0
+        with transaction.atomic():
+            for row in batch:
+                phone = _str(row.get('phone'))
+                if not phone:
+                    continue
+                try:
+                    user, was_created = _get_or_create_user(phone, row)
+                    user_map[phone] = user
+                    if was_created:
+                        b_created += 1
+                    else:
+                        b_skipped += 1
+                except Exception as exc:
+                    b_errors += 1
+                    stdout.write(f"  [user error] phone={phone}: {exc}")
+        return b_created, b_skipped, b_errors
+
     for idx, row in enumerate(rows, 1):
         phone = _str(row.get('phone'))
         if not phone:
             continue
-        try:
-            if dry_run:
-                from apps.accounts.models import User
-                user = (
-                    User.objects.filter(phone=phone).first()
-                    or User.objects.filter(
-                        email=_str(row.get('email')) or f"{phone}@barmha.phone"
-                    ).first()
-                )
-                user_map[phone] = user
-                if user:
-                    skipped += 1
-                else:
-                    created += 1
-            else:
-                user, was_created = _get_or_create_user(phone, row)
-                user_map[phone] = user
-                created += 1 if was_created else 0
-                skipped += 1 if not was_created else 0
-        except Exception as exc:
-            errors += 1
-            stdout.write(f"  [user error] phone={phone}: {exc}")
+        batch.append(row)
+
+        if len(batch) >= USER_BATCH_SIZE:
+            bc, bs, be = _flush(batch)
+            created += bc; skipped += bs; errors += be
+            stdout.write(f"  [users] committed batch → {created} created so far")
+            batch = []
 
         _progress(stdout, "users", idx, total)
+
+    # Flush remaining rows that didn't fill a full batch.
+    if batch:
+        bc, bs, be = _flush(batch)
+        created += bc; skipped += bs; errors += be
+        stdout.write(f"  [users] committed final batch → {created} created so far")
 
     stdout.write(f"  Users done: {created} created, {skipped} already exist, {errors} errors")
     return user_map
@@ -221,7 +265,7 @@ def seed_properties(rows: list[dict], user_map: dict, loc_cache: dict,
                     price          = _decimal(row.get('price') or 0),
                     currency       = _str(row.get('currency')) or 'SYP',
                     negotiable     = _bool(row.get('negotiable')),
-                    hide_price     = _bool(row.get('hide_price')),
+                    hide_price     = _bool(row.get('hide_price')) or not row.get('price'),
                     bedrooms       = _str(row.get('bedrooms')),
                     bathrooms      = _int(row.get('bathrooms')) or None,
                     area_sqm       = _decimal(row.get('area_sqm')) if row.get('area_sqm') else None,
@@ -384,7 +428,8 @@ def seed_vehicles(rows: list[dict], user_map: dict, loc_cache: dict,
 
 # ── ClassifiedListing — one-by-one (django-parler translated fields) ───────────
 
-def _save_classified_row(row: dict, user_map: dict, loc_cache: dict, skip_images: bool) -> None:
+def _save_classified_row(row: dict, user_map: dict, loc_cache: dict, skip_images: bool) -> int:
+    """Returns number of image errors."""
     from apps.classifieds.models import ClassifiedListing, ClassifiedImage
 
     phone   = _str(row.get('phone'))
@@ -411,6 +456,7 @@ def _save_classified_row(row: dict, user_map: dict, loc_cache: dict, skip_images
     listing.description = _str(row.get('description'))
     listing.save()
 
+    img_errors = 0
     if not skip_images:
         images_str = _str(row.get('images', ''))
         for order, path in enumerate(
@@ -422,7 +468,8 @@ def _save_classified_row(row: dict, user_map: dict, loc_cache: dict, skip_images
                     ci = ClassifiedImage(listing=listing, order=order, is_primary=(order == 0))
                     ci.image.save(Path(path).name, img_file, save=True)
             except Exception:
-                pass
+                img_errors += 1
+    return img_errors
 
 
 def seed_classifieds(rows: list[dict], user_map: dict, loc_cache: dict,
@@ -439,7 +486,7 @@ def seed_classifieds(rows: list[dict], user_map: dict, loc_cache: dict,
         stdout.write(f"  ClassifiedListing done: {would_create} would create, {total - would_create} no-user")
         return would_create
 
-    created = skipped = errors = 0
+    created = skipped = errors = img_errors = 0
     for idx, row in enumerate(rows, 1):
         if not user_map.get(_str(row.get('phone'))):
             skipped += 1
@@ -447,14 +494,17 @@ def seed_classifieds(rows: list[dict], user_map: dict, loc_cache: dict,
         post_id = _str(row.get('source_post_id'))
         try:
             with transaction.atomic():
-                _save_classified_row(row, user_map, loc_cache, skip_images)
+                img_errors += _save_classified_row(row, user_map, loc_cache, skip_images)
             created += 1
         except Exception as exc:
             errors += 1
             stdout.write(f"  [classified error] {post_id}: {exc}")
         _progress(stdout, "classified", idx, total)
 
-    stdout.write(f"  ClassifiedListing done: {created} created, {skipped} no-user, {errors} errors")
+    stdout.write(
+        f"  ClassifiedListing done: {created} created, {skipped} no-user, "
+        f"{errors} errors, {img_errors} image errors"
+    )
     return created
 
 
@@ -548,6 +598,12 @@ class Command(BaseCommand):
             action='store_true',
             help='Skip image uploads (much faster; images can be added later)',
         )
+        parser.add_argument(
+            '--limit',
+            type=int,
+            default=None,
+            help='Max rows to load per sheet, including users (e.g. --limit 50 for testing)',
+        )
 
     def handle(self, *_args, **options):
         excel_path = Path(options['excel'])
@@ -560,6 +616,7 @@ class Command(BaseCommand):
         dry_run     = options['dry_run']
         skip_images = options['skip_images']
         sheet       = options['sheet']
+        limit       = options['limit']
 
         self.stdout.write(
             self.style.SUCCESS(
@@ -574,7 +631,9 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"  Sheet '{name}' not found, skipping."))
                 return []
             rows = _read_sheet(wb[name])
-            self.stdout.write(f"  Sheet '{name}': {len(rows)} rows")
+            if limit is not None:
+                rows = rows[:limit]
+            self.stdout.write(f"  Sheet '{name}': {len(rows)} rows" + (f" (limited to {limit})" if limit else ""))
             return rows
 
         # Pre-load location cache (one query for all governorates)

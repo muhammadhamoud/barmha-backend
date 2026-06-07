@@ -2,10 +2,13 @@ from django.contrib.auth import get_user_model
 from django.urls import path
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenRefreshView
+from apps.core.throttles import TokenRefreshThrottle
 from . import views
 
 
 class SafeTokenRefreshView(TokenRefreshView):
+    throttle_classes = [TokenRefreshThrottle]
+
     def post(self, request, *args, **kwargs):
         try:
             return super().post(request, *args, **kwargs)

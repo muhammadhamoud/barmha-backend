@@ -72,7 +72,7 @@ class VehicleListCreateView(generics.ListCreateAPIView):
 
 
 class VehicleDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset           = VehicleListing.objects.filter(is_active=True).select_related("make", "model", "location__governorate", "showroom").prefetch_related("images")
+    queryset           = VehicleListing.objects.select_related("make", "model", "location__governorate", "showroom").prefetch_related("images")
     permission_classes = [IsOwnerOrAdminOrReadOnly]
 
     def get_serializer_class(self):

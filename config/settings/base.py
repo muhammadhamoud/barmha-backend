@@ -174,6 +174,7 @@ REST_FRAMEWORK = {
         "login": "5/minute",
         "register": "10/hour",
         "contact": "5/hour",
+        "token_refresh": "60/minute",
     },
 }
 
